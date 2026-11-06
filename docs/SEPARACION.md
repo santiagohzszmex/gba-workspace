@@ -34,8 +34,16 @@ Un solo proyecto Supabase (`wgihpztgwsovhykboyru`) para todo GBA. `supabase/migr
 - El canal del actualizador (`latest-darwin.json`, `latest-windows.json`, `latest.json`) sigue en las releases de **GBA-VISTA**: es la URL que tienen las apps instaladas (`tauri.conf.json`). `scripts/workspace-update-manifest.mjs` separa `REPOSITORY` (canal) de `SOURCE_REPOSITORY` (este repo, donde corre CI). Las releases nuevas registran el commit de este repo en sus notas.
 - Mover el canal a este repo exige antes una versión de transición publicada en el canal actual que cambie el `endpoint` del actualizador.
 
-## Pendiente
+## Estado al cierre (5 de noviembre de 2026)
 
-1. Crear el repositorio en GitHub, subir el historial y activar el flujo de compilación nativa.
-2. Proyecto Vercel de Workspace web (variables públicas `VITE_SUPABASE_URL` y `VITE_SUPABASE_ANON_KEY`), vista previa verificada y, con autorización, enrutar `gba.software/workspace/web` y `/workspace/notification-worker.js` hacia él.
-3. Limpiar GBA-VISTA: quitar el código de Workspace salvo lo listado arriba y añadir el enrutamiento.
+- **Repositorio**: [santiagohzszmex/gba-workspace](https://github.com/santiagohzszmex/gba-workspace), público como GBA-VISTA, con `main` y las 26 etiquetas de versiones. Variables públicas de CI (`VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`) copiadas; no hay secretos.
+- **Compilación nativa desde este repo**: [run 42154497428](https://github.com/santiagohzszmex/gba-workspace/actions/runs/42154497428) aprobada (validación, Mac Apple Silicon, Mac Intel y Windows).
+- **Web**: proyecto Vercel `gba-workspace` con dominio propio `workspace.gba.software` (CNAME en name.com hacia Vercel, certificado emitido). `gba.software/workspace/web` y `/workspace/notification-worker.js` se enrutan a él desde GBA-VISTA.
+- **GBA-VISTA**: producción publicada desde la rama `claude/separar-workspace` (`be55378`): sin el código de Workspace, con lo listado arriba. Verificado: `/`, `/workspace/web`, `/workspace`, trabajador e icono de avisos, `/sepia`, `/ultramar`, `/mothership`, `/vista`, `/keynotes`, `/convocatoria/gimg`, configuración de Sepia, `releases.json`; avisos `POST` sin credencial 401; GBA ID responde. Workspace web carga sin errores en consola.
+- Pruebas: todas las de este repo y las 10 de VISTA aprobadas.
+
+## Siguiente
+
+- Mover `api/workspace-push.js` y `api/workspace-connector-config.js` a este proyecto cuando se autorice trasladar sus claves.
+- Mover el canal del actualizador a este repo con una versión de transición.
+- La rama `claude/workspace-1-7-5-ultramar` de GBA-VISTA queda superada por `main` de este repo.
