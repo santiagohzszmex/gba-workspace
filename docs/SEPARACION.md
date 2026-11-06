@@ -17,7 +17,7 @@ App (escritorio y web), Tauri, pasarela R2 (`cloudflare/workspace-originals`), c
 | Pieza | Motivo |
 |---|---|
 | `api/gba-id.js` (GBA ID) y su prueba | Servicio del dominio compartido por VISTA, Mothership, Sepia y Workspace; tiene claves de servidor |
-| `api/workspace-push.js` y `api/workspace-connector-config.js` (+ `notification-delivery`) | Usan claves de producción (VAPID) configuradas en el proyecto Vercel de GBA, y pg_cron llama a `https://gba.software/api/workspace-push`. Moverlos requiere trasladar esas claves con autorización |
+| `api/workspace-push.js` y `api/workspace-connector-config.js` (prueba `workspace-push-api` en GBA-VISTA; el cliente de avisos se prueba aquí en `notification-client`) | Usan claves de producción (VAPID) configuradas en el proyecto Vercel de GBA, y pg_cron llama a `https://gba.software/api/workspace-push`. Moverlos requiere trasladar esas claves con autorización |
 | Página de descargas servida en `gba.software/workspace` | Usa los estilos generales del sitio de GBA. Este repo conserva la fuente; si cambia `releases.json`, se refleja allá |
 | `WorkspaceAuth` y `WorkspacePublications` | VISTA y Mothership los reutilizan (pantalla de acceso y publicaciones de GIMG) |
 
