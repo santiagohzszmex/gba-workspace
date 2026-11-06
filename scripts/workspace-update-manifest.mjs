@@ -1,7 +1,11 @@
 import { createHash } from 'node:crypto';
 import { toNativeVersion } from '../src/workspace/releaseVersion.mjs';
 export const UPDATE_TARGETS=['darwin-aarch64','darwin-x86_64','windows-x86_64'];
+// Canal de actualizaciones: las apps instaladas leen latest-*.json de las releases de este repo.
+// No cambiar sin publicar antes una versión de transición que apunte su actualizador al nuevo canal.
 export const REPOSITORY='santiagohzszmex/GBA-VISTA-seeitdifferently';
+// Repo del código de Workspace (desde 2026-11-05): ahí corre la compilación nativa (CI).
+export const SOURCE_REPOSITORY=process.env.WORKSPACE_SOURCE_REPOSITORY||'santiagohzszmex/gba-workspace';
 export function assertLegacyPublisherEndpoint(config) {
   const expected=`https://github.com/${REPOSITORY}/releases/download/workspace-updates/latest.json`;
   if(JSON.stringify(config.plugins?.updater?.endpoints)!==JSON.stringify([expected]))throw Error('Platform-channel releases must use their platform publisher; latest.json is reserved for the legacy compatibility bridge');

@@ -3,7 +3,7 @@ import path from 'node:path';
 import os from 'node:os';
 import {execFileSync} from 'node:child_process';
 import {createHash} from 'node:crypto';
-import {UPDATE_TARGETS,REPOSITORY,verifyCandidate,buildUpdateManifest,assertLegacyPublisherEndpoint} from './workspace-update-manifest.mjs';
+import {UPDATE_TARGETS,REPOSITORY,SOURCE_REPOSITORY,verifyCandidate,buildUpdateManifest,assertLegacyPublisherEndpoint} from './workspace-update-manifest.mjs';
 import {verifyDatabaseAcceptance} from './workspace-database-acceptance.mjs';
 import {buildReleaseManifest} from './workspace-release-manifest.mjs';
 import {verifyPresentationAcceptance} from './workspace-identity-acceptance.mjs';
@@ -29,7 +29,7 @@ const version=config.version,displayVersion=release.version,tag=`workspace-v${di
 const key=process.env.WORKSPACE_UPDATE_SIGNING_KEY||path.join(os.homedir(),'.tauri/workspace-updates.key');
 const publicKey=(await fs.readFile(`${key}.pub`,'utf8')).trim();
 if(publicKey!==config.plugins.updater.pubkey)throw Error('Signing key does not match the public identity embedded in this app');
-const info=JSON.parse(gh(['run','view',runId,'--repo',REPOSITORY,'--json','headSha,conclusion,name,url']));
+const info=JSON.parse(gh(['run','view',runId,'--repo',SOURCE_REPOSITORY,'--json','headSha,conclusion,name,url']));
 if(info.conclusion!=='success'||info.name!=='Workspace native candidates')throw Error('All native candidate jobs must pass before publication');
 const commit=info.headSha;
 const head=execFileSync('git',['rev-parse','HEAD'],{encoding:'utf8'}).trim();
@@ -43,7 +43,7 @@ try {
     const [system,architecture]=target.split('-'),platform=system==='darwin'?'macos':system;
     const destination=path.join(folder,target);await fs.mkdir(destination,{recursive:true});
     try { await fs.access(path.join(destination,'packages.json')); }
-    catch { gh(['run','download',runId,'--repo',REPOSITORY,'--name',`workspace-${platform}-${architecture}`,'--dir',destination]); }
+    catch { gh(['run','download',runId,'--repo',SOURCE_REPOSITORY,'--name',`workspace-${platform}-${architecture}`,'--dir',destination]); }
     const metadata=JSON.parse(await fs.readFile(path.join(destination,'packages.json'),'utf8'));
     const startup=JSON.parse(await fs.readFile(path.join(destination,'startup.json'),'utf8'));
     const file=metadata.updaters?.[0]?.file;

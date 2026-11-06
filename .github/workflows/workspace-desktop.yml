@@ -1,8 +1,5 @@
 name: Workspace native candidates
 on:
-  push:
-    branches: [codex/workspace-cloud-release-20261009]
-    paths: ['.github/workflows/workspace-desktop.yml']
   workflow_dispatch:
     inputs:
       notarize_macos:
@@ -30,7 +27,7 @@ jobs:
           node-version: 22
           cache: npm
       - run: npm ci
-      - run: npm run test:workspace && npm run test:desktop && npm run test:session && npm run test:recruitment
+      - run: npm run test:workspace && npm run test:desktop
   build:
     needs: validate
     environment: workspace-candidates

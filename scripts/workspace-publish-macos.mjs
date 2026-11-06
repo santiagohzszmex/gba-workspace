@@ -5,7 +5,7 @@ import os from 'node:os';
 import {execFileSync} from 'node:child_process';
 import {toNativeVersion} from '../src/workspace/releaseVersion.mjs';
 import {createHash} from 'node:crypto';
-import {REPOSITORY,UPDATE_TARGETS,verifyCandidate,buildUpdateManifest} from './workspace-update-manifest.mjs';
+import {REPOSITORY,SOURCE_REPOSITORY,UPDATE_TARGETS,verifyCandidate,buildUpdateManifest} from './workspace-update-manifest.mjs';
 const args=process.argv.slice(2),option=n=>args[args.indexOf(n)+1];
 if(!args.includes('--run')||!args.includes('--acceptance'))throw Error('Required: --run RUN_ID --acceptance PRIVATE_PROOF [--publish]');
 const runId=option('--run'),publish=args.includes('--publish'),targets=UPDATE_TARGETS.slice(0,2);
@@ -18,7 +18,7 @@ if(!/^1\.7\.\d+(?:\.\d+)?$/.test(release.version)||release.nativeVersion!==toNat
 if(config.plugins.updater.endpoints[0]!==`https://github.com/${REPOSITORY}/releases/download/workspace-updates/latest-{{target}}.json`)throw Error('Separate update endpoint required');
 const base=await fs.readFile('public/gba/workspace/releases.json');if(JSON.parse(base).version!=='1.5.0')throw Error('Base must remain 1.5.0');
 const commit=execFileSync('git',['rev-parse','HEAD'],{encoding:'utf8'}).trim();
-const info=JSON.parse(gh(['run','view',runId,'--repo',REPOSITORY,'--json','headSha,conclusion,name,url']));
+const info=JSON.parse(gh(['run','view',runId,'--repo',SOURCE_REPOSITORY,'--json','headSha,conclusion,name,url']));
 if(info.conclusion!=='success'||info.headSha!==commit||info.name!=='Workspace native candidates')throw Error('Exact successful native CI required');
 const acceptance=JSON.parse(await fs.readFile(option('--acceptance')));
 if(acceptance.commit!==commit||acceptance.projectRef!=='wgihpztgwsovhykboyru'||!acceptance.backupRestoreVerified||!acceptance.documentReadVerified||!acceptance.documentWriteVerified||acceptance.imagesEnabled!==true||(release.version==='1.7.0'?JSON.stringify(acceptance.imageProjectIds)!==JSON.stringify(['8cde6736-e742-4a11-8a53-cb320b36b055']):acceptance.imagesAllProjects!==true)||acceptance.derivativesEnabled!==false||!/^[a-f\d-]{36}$/.test(acceptance.workerVersion||'')||acceptance.cpuMs!==1000||acceptance.serverHash!=='full-sha256')throw Error('Complete pilot deployment evidence required');
@@ -49,7 +49,7 @@ try{
  const files=[],updates=[],downloads=[],tag=`workspace-v${release.version}-beta.1`;
  for(const target of targets){
   const architecture=target.split('-')[1],dest=path.join(folder,target);await fs.mkdir(dest,{recursive:true});
-  try{await fs.access(path.join(dest,'packages.json'));}catch{gh(['run','download',runId,'--repo',REPOSITORY,'--name',`workspace-macos-${architecture}`,'--dir',dest]);}
+  try{await fs.access(path.join(dest,'packages.json'));}catch{gh(['run','download',runId,'--repo',SOURCE_REPOSITORY,'--name',`workspace-macos-${architecture}`,'--dir',dest]);}
   const metadata=JSON.parse(await fs.readFile(path.join(dest,'packages.json'))),startup=JSON.parse(await fs.readFile(path.join(dest,'startup.json')));
   const file=metadata.updaters?.[0]?.file;if(!file||path.basename(file)!==file)throw Error('Invalid candidate file');
   const bytes=await fs.readFile(path.join(dest,file)),artifact=verifyCandidate(metadata,startup,bytes,{commit,version:release.nativeVersion,displayVersion:release.version,target});
@@ -67,13 +67,13 @@ try{
  const proof={...acceptance,nativeCi:info.url,installedMacosVerified:true,interactiveWindowsVerified:false,realPilotSmoke:'pending Santiago and reviewer',downloads};
  await fs.writeFile(path.join(folder,'acceptance.json'),JSON.stringify(proof,null,2)+'\n');
  await fs.writeFile(path.join(folder,'packages.json'),JSON.stringify({commit,downloads,updaters:updates},null,2)+'\n');
- await fs.writeFile(path.join(folder,'release-notes.md'),notes+`\nCódigo: ${commit}\nCompilación, instalación y arranque en ambos corredores macOS: ${info.url}\n`);
+ await fs.writeFile(path.join(folder,'release-notes.md'),notes+`\nCódigo: ${commit} (${SOURCE_REPOSITORY})\nCompilación, instalación y arranque en ambos corredores macOS: ${info.url}\n`);
  if(!publish){console.log('Prepared signed macOS-only release; no public changes.');process.exitCode=0;}
  else{
   const sharedUrl=`https://github.com/${REPOSITORY}/releases/download/workspace-updates/latest.json`;
   const shared=await fetch(sharedUrl);if(!shared.ok)throw Error('Cannot preserve shared update channel');const prior=Buffer.from(await shared.arrayBuffer());
   const releases=JSON.parse(gh(['release','list','--repo',REPOSITORY,'--limit','100','--json','tagName']));if(releases.some(r=>r.tagName===tag))throw Error('Immutable release already exists');
-  gh(['release','create',tag,...files,path.join(folder,'packages.json'),path.join(folder,'acceptance.json'),'--repo',REPOSITORY,'--target',commit,'--draft','--prerelease','--title',`Workspace ${release.version} Lapislázuli · macOS`,'--notes-file',path.join(folder,'release-notes.md')]);
+  gh(['release','create',tag,...files,path.join(folder,'packages.json'),path.join(folder,'acceptance.json'),'--repo',REPOSITORY,...(SOURCE_REPOSITORY===REPOSITORY?['--target',commit]:[]),'--draft','--prerelease','--title',`Workspace ${release.version} Lapislázuli · macOS`,'--notes-file',path.join(folder,'release-notes.md')]);
   gh(['release','edit',tag,'--repo',REPOSITORY,'--draft=false','--prerelease']);
   for(const p of [...updates,...downloads]){const r=await fetch(p.url);if(!r.ok)throw Error('Public package unavailable; feed not promoted');const b=Buffer.from(await r.arrayBuffer());if(b.length!==p.size||sha(b)!==p.sha256)throw Error('Public package bytes differ; feed not promoted');}
   gh(['release','upload','workspace-updates',feedFile,'--repo',REPOSITORY,'--clobber']);
