@@ -1,9 +1,9 @@
 {
-  "version": "1.7.2.1",
-  "nativeVersion": "1.7.201",
+  "version": "1.7.5",
+  "nativeVersion": "1.7.500",
   "codename": "Lapislázuli",
   "minimumNativeVersion": "0.1.401",
   "mandatory": false,
-  "noticeTitle": "Lapislázuli · Diseño anterior restaurado",
-  "notice": "Workspace vuelve al diseño de la versión 1.7.1.4. Tu trabajo, permisos y avisos no cambian."
+  "noticeTitle": "Lapislázuli · Conexión con Ultramar",
+  "notice": "Prepara asignaciones de maquetación para Ultramar y recibe en Revisión las versiones enviadas desde Ultramar con sus tres archivos verificados."
 }

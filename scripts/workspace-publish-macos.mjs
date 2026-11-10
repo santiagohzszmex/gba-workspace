@@ -40,6 +40,10 @@ if(release.version==='1.7.1.4'){
  for(const migration of update.migrations||[])if(!/^supabase\/migrations\/2026110120204[68]_workspace_(?:device_notifications|push_runtime)\.sql$/.test(migration.file)||sha(await fs.readFile(migration.file))!==migration.sha256)throw Error('Notification migration evidence differs');
  if(update.migrations?.length!==2)throw Error('Both notification migrations required');
 }
+if(Number(release.nativeVersion.split('.')[2])>=500){
+ const bridge=acceptance.ultramarBridge;
+ if(!bridge||bridge.migration?.file!=='supabase/migrations/20261104010000_workspace_ultramar_bridge.sql'||sha(await fs.readFile(bridge.migration.file))!==bridge.migration.sha256||bridge.productionFunctionsMatching!==16||bridge.hashVectorsVerified!==3||bridge.enabled!==true||!/^[0-9a-f-]{36}$/.test(bridge.workerVersion||'')||bridge.gatewaySmoke?.ultramarWithoutSession!==401||bridge.gatewaySmoke?.originalsWithoutSession!==401||bridge.localSqlChecks<50||bridge.gatewayChecks<36)throw Error('Ultramar bridge production evidence required');
+}
 if(Date.now()-Date.parse(acceptance.verifiedAt)>86400000||!Number.isFinite(Date.parse(acceptance.verifiedAt)))throw Error('Fresh deployment evidence required');
 const key=path.join(os.homedir(),'.tauri/workspace-updates.key');
 if((await fs.readFile(key+'.pub','utf8')).trim()!==config.plugins.updater.pubkey)throw Error('Wrong signing identity');

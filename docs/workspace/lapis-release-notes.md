@@ -1,3 +1,10 @@
+## 1.7.5 · Conexión con Ultramar
+
+- «Preparar para Ultramar» en Asignaciones: arma una instantánea fija de la asignación de maquetación (indicaciones, página, sangrado, textos aceptados y originales del encargo).
+- «Abrir en Ultramar» en Mi trabajo abre la asignación directamente en Ultramar en tu Mac.
+- Las versiones enviadas desde Ultramar llegan a Revisión con su archivo .ultramar, PDF y vista previa, verificados por huella; se descargan desde la pasarela privada.
+- Requiere la sesión de GBA ID en Ultramar y una licencia vigente de Sepia ’01. La cadena de revisión (área → QA → Dirección), los permisos y tu trabajo no cambian.
+
 ## 1.7.2.1 · Diseño anterior restaurado
 
 - Workspace vuelve al diseño de la versión 1.7.1.4: pestañas de edición y secciones como antes.
