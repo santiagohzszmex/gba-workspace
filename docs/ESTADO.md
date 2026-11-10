@@ -12,7 +12,7 @@ Una sola tabla con lo que está publicado en cada canal. Actualizar en cada publ
 | Página pública de descargas | 1.5.0 base | `gba.software/workspace` (`public/gba/workspace/releases.json`) | Intencionalmente fija; los scripts de publicación exigen que no cambie |
 | Web | 1.7.5 (`271850d`) | `workspace.gba.software` (Vercel `gba-workspace`) | Despliegue automático desde `main` |
 | Pasarela de archivos (Worker `workspace-originals`) | 1.7.5 · versión `b49b83d0` | `workspace-originals.gba-vista.workers.dev` | Antes: 1.7.0 (`937db032`, 17 oct). 1.7.1–1.7.2.1 no cambiaron la pasarela, por eso no se volvió a publicar |
-| Base de datos (Supabase `wgihpztgwsovhykboyru`) | 1.7.5 · `workspace_ultramar_bridge` | — | Aplicada el 10 nov; 16 funciones idénticas al archivo; 3 vectores de huella verificados |
+| Base de datos (Supabase `wgihpztgwsovhykboyru`) | 1.7.5 · `workspace_ultramar_bridge` + corrección `workspace_ultramar_read_only_open_check` | — | Aplicadas el 10 nov; funciones idénticas al archivo; 3 vectores de huella verificados |
 | Puente con Ultramar | **Encendido** (`upload_policy.ultramar_enabled = true`) | — | Límites: 90 MB `.ultramar`, 90 MB PDF, 20 MB vista previa (4096 px). Apagar: `update workspace_private.upload_policy set ultramar_enabled=false` |
 
 ## Por qué la versión de la pasarela no coincide con la de la app
@@ -39,6 +39,15 @@ actualizador de macOS.
 
 **No incluido en 1.7.5**: la vista previa con Cuaderna dentro de Workspace que mencionaba el plan
 ([1.7.5-ultramar-plan.md](workspace/1.7.5-ultramar-plan.md)); sigue pendiente.
+
+## Corrección 1.7.5 (10 de noviembre de 2026)
+
+Primer envío real desde Ultramar: «La edición está cerrada» (UM008) en una edición activa. Causa: la API ejecuta catálogo,
+instantánea y original en una transacción de sólo lectura y `require_open_project` usa `SELECT … FOR SHARE`; el puente
+convertía ese error en UM008. Corrección `20261110230000_workspace_ultramar_read_only_open_check.sql` (sólo reemplaza
+`workspace_private.ultramar_task`): lecturas sin candado; reserva y confirmación con candado, y sólo una edición realmente
+cerrada da UM008. Prueba nueva en transacción de sólo lectura (64 comprobaciones del puente). Aplicada con autorización de
+Santiago; función de producción idéntica al archivo.
 
 ## Pendiente
 

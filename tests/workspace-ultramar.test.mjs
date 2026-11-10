@@ -26,6 +26,7 @@ export async function runUltramarAcceptance(db){
   create table if not exists sepia_private.licenses(id uuid primary key default gen_random_uuid(),user_id uuid not null,code_id uuid not null default gen_random_uuid(),edition text not null default '01',starts_at timestamptz not null,expires_at timestamptz not null,revoked_at timestamptz);
   create table if not exists sepia_private.connections(id uuid primary key default gen_random_uuid(),token_hash text not null default md5(random()::text)||md5(random()::text),user_id uuid not null,app text not null,device_id uuid not null default gen_random_uuid(),device_name text not null default 'Mac local',epoch bigint not null default 1,auth_session_id uuid not null,created_at timestamptz not null default now(),expires_at timestamptz not null default now()+interval '7 days',last_checked_at timestamptz not null default now(),revoked_at timestamptz);`);
  await db.exec(fs.readFileSync(new URL('../supabase/migrations/20261104010000_workspace_ultramar_bridge.sql',import.meta.url),'utf8'));
+ await db.exec(fs.readFileSync(new URL('../supabase/migrations/20261110230000_workspace_ultramar_read_only_open_check.sql',import.meta.url),'utf8'));
 
  // La huella del servidor coincide con la de Ultramar, incluidos Unicode, números y claves anidadas.
  const sample={z:1,a:[{b:'ñandú “x”',a:612},{c:595.276,d:null,e:true}],m:{y:'\u0007',x:''}};
@@ -102,6 +103,17 @@ export async function runUltramarAcceptance(db){
  const descriptor=await scalar('select public.workspace_ultramar_original($1,$2,$3)',[layoutId,referencia.id,original]);
  eq(descriptor.ruta,'/originals/'+original);
  await bad(scalar('select public.workspace_ultramar_original($1,$2,$3)',[layoutId,referencia.id,reference]),'UM011');
+ // La API (PostgREST) ejecuta las funciones STABLE en una transacción de solo lectura: catálogo, instantánea y original
+ // deben funcionar ahí sin candados (fallo real de producción 2026-11-10: «La edición está cerrada» por SELECT FOR SHARE).
+ const soloLectura=async(q,p)=>{await db.exec('begin');try{await db.exec('set transaction read only');return await scalar(q,p);}finally{await db.exec('rollback');}};
+ eq((await soloLectura('select public.workspace_ultramar_snapshot($1,null)',[layoutId])).referencia.id,referencia.id);
+ eq((await soloLectura('select public.workspace_ultramar_original($1,$2,$3)',[layoutId,referencia.id,original])).ruta,'/originals/'+original);
+ eq((await soloLectura('select public.workspace_ultramar_assignments()')).length,1);
+ // Una edición realmente cerrada sigue dando UM008, en lectura y al reservar.
+ await admin();await db.query("update public.workspace_projects set status='closed' where id=$1",[projectId]);await actor(41);
+ await bad(soloLectura('select public.workspace_ultramar_snapshot($1,null)',[layoutId]),'UM008');
+ await bad(scalar('select public.workspace_ultramar_reserve($1,$2,$3,$4,$5)',[layoutId,referencia.id,(await task()).revision,'cerrada-'+'x'.repeat(16),JSON.stringify([])]),'UM008');
+ await admin();await db.query("update public.workspace_projects set status='active' where id=$1",[projectId]);await actor(41);
 
  // Instantáneas inmutables: preparar otra vez crea la versión 2 y conserva la 1.
  const snap2=await scalar('select public.workspace_ultramar_prepare($1,$2,$3)',[layoutId,{pagina:{...page,ancho:595.276,alto:841.89},instrucciones:'Usa la paleta.'},(await task()).revision]);
