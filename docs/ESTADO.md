@@ -1,0 +1,46 @@
+# Estado de publicación de Workspace
+
+Una sola tabla con lo que está publicado en cada canal. Actualizar en cada publicación.
+
+**Última actualización: 10 de noviembre de 2026.**
+
+| Pieza | Versión publicada | Dónde | Notas |
+|---|---|---|---|
+| App de escritorio · macOS (actualizador) | **1.7.5** Lapislázuli (nativa 1.7.500), publicada el 10 nov · [release](https://github.com/santiagohzszmex/GBA-VISTA-seeitdifferently/releases/tag/workspace-v1.7.5-beta.1) | `latest-darwin.json` en la release `workspace-updates` de `GBA-VISTA-seeitdifferently` | Antes: 1.7.2.1 (4 nov). Beta sin notarización; paquetes firmados con la llave de Workspace |
+| App de escritorio · Windows (actualizador) | 1.6.6.3 Cuarzo | `latest-windows.json` (17 oct) | Lapislázuli no se ofrece en Windows hasta la prueba interactiva |
+| Canal compartido (instalaciones antiguas) | 1.6.6.3 puente | `latest.json` (17 oct) | Lleva a las Mac antiguas a Lapislázuli |
+| Página pública de descargas | 1.5.0 base | `gba.software/workspace` (`public/gba/workspace/releases.json`) | Intencionalmente fija; los scripts de publicación exigen que no cambie |
+| Web | 1.7.5 (`271850d`) | `workspace.gba.software` (Vercel `gba-workspace`) | Despliegue automático desde `main` |
+| Pasarela de archivos (Worker `workspace-originals`) | 1.7.5 · versión `b49b83d0` | `workspace-originals.gba-vista.workers.dev` | Antes: 1.7.0 (`937db032`, 17 oct). 1.7.1–1.7.2.1 no cambiaron la pasarela, por eso no se volvió a publicar |
+| Base de datos (Supabase `wgihpztgwsovhykboyru`) | 1.7.5 · `workspace_ultramar_bridge` | — | Aplicada el 10 nov; 16 funciones idénticas al archivo; 3 vectores de huella verificados |
+| Puente con Ultramar | **Encendido** (`upload_policy.ultramar_enabled = true`) | — | Límites: 90 MB `.ultramar`, 90 MB PDF, 20 MB vista previa (4096 px). Apagar: `update workspace_private.upload_policy set ultramar_enabled=false` |
+
+## Por qué la versión de la pasarela no coincide con la de la app
+
+La app (web y escritorio) y la pasarela de archivos se publican por separado. Una versión de la app que no toca la pasarela
+(1.7.1.x, 1.7.2, 1.7.2.1) no la vuelve a publicar. En `wrangler deployments list` la última publicación aparecía como «1.7.0»
+aunque la app ya iba en 1.7.2.1; eso era correcto, no un atraso.
+
+## Publicación 1.7.5 (10 de noviembre de 2026)
+
+Autorizado por Santiago el 10 de noviembre: migración, rutas de la pasarela, encender el puente y publicar 1.7.5 en el
+actualizador de macOS.
+
+1. Migración `20261104010000_workspace_ultramar_bridge.sql` aplicada (aditiva; no borra ni cambia permisos: la huella de la
+   matriz de permisos sigue siendo `daf1a89a16b23992e880e63e12d37b23`, 230 filas).
+2. Pasarela publicada con `/ultramar/*` (`b49b83d0`). Sin sesión responde 401 `UM030`; los originales siguen igual (401).
+3. Puente encendido.
+4. Web `271850d` en producción.
+5. macOS: compilación nativa [run 42917468996](https://github.com/santiagohzszmex/gba-workspace/actions/runs/42917468996)
+   aprobada (Mac Apple Silicon, Mac Intel y Windows); paquetes firmados y verificados con la app instalada (1.7.2.1) y
+   publicados como `workspace-v1.7.5-beta.1`. Comprobado después: `latest-darwin.json` = 1.7.5; `latest-windows.json` y
+   `latest.json` siguen en 1.6.6.3; la página pública sigue en 1.5.0. El instalador de Windows 1.7.5 quedó como
+   candidato en borrador (no publicado).
+
+**No incluido en 1.7.5**: la vista previa con Cuaderna dentro de Workspace que mencionaba el plan
+([1.7.5-ultramar-plan.md](workspace/1.7.5-ultramar-plan.md)); sigue pendiente.
+
+## Pendiente
+
+- Ensayo de punta a punta con Ultramar en Mac con una sesión real (preparar asignación → abrir en Ultramar → enviar → revisar).
+- Windows: Lapislázuli (1.7.x) y Ultramar en Windows.
