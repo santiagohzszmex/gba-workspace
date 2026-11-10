@@ -49,7 +49,12 @@ convertía ese error en UM008. Corrección `20261110230000_workspace_ultramar_re
 cerrada da UM008. Prueba nueva en transacción de sólo lectura (64 comprobaciones del puente). Aplicada con autorización de
 Santiago; función de producción idéntica al archivo.
 
+## Ensayo con Ultramar en Mac (10 de noviembre de 2026): aprobado
+
+Edición «Prueba 1.7.5 · Ultramar» (`828e4938…`), asignación «Maquetación de prueba · Ultramar» (Diseño y maquetación).
+Preparada para Ultramar → enviada desde Ultramar con la sesión de Santiago → versión 1 en Revisión con `.ultramar`, PDF y PNG
+verificados por la pasarela; una sola reserva. La edición de prueba puede cerrarse o eliminarse cuando ya no se necesite.
+
 ## Pendiente
 
-- Ensayo de punta a punta con Ultramar en Mac con una sesión real (preparar asignación → abrir en Ultramar → enviar → revisar).
 - Windows: Lapislázuli (1.7.x) y Ultramar en Windows.
