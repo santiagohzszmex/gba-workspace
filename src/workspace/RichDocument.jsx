@@ -10,6 +10,7 @@ import Highlight from '@tiptap/extension-highlight';
 import TextAlign from '@tiptap/extension-text-align';
 import { TableKit } from '@tiptap/extension-table';
 import { micromark } from 'micromark';
+import { cleanPastedHtml, looksLikeMarkdown, markdownToHtml } from './pasteCleanup.mjs';
 import { Bold, Italic, Underline, Strikethrough, List, ListOrdered, Undo2, Redo2, Link2, Highlighter, MoreHorizontal, Pin, X, Image, Table2, Search, ListTree, Check, CloudOff } from 'lucide-react';
 import { documentMarkdown, EMPTY_DOCUMENT, FONTS, FONT_SIZES } from './documentModel';
 import { DOCUMENT_SCHEMA, LINE_HEIGHTS } from './editorModel';
@@ -41,11 +42,11 @@ function textMatches(editor, query) {
 }
 export default function RichDocument({ initialDocument, initialMarkdown, onChange, disabled, scope = {}, palette = [], saveState, onSave, onSubmit, compact = false, ariaLabel, noteMode = false, placeholder }) {
   const context = useDocumentContext(), live = useRef({}); live.current = {...context,scope,onChange,onSave,onSubmit,pinned:false,pasteImage:live.current.pasteImage};
-  const [panel,setPanel] = useState(''), [pinned,setPinned] = useState(false), [find,setFind] = useState(''), [replacement,setReplacement] = useState(''), [href,setHref] = useState(''), [error,setError] = useState(''), [uploading,setUploading] = useState(false);
+  const [pasteNotice,setPasteNotice] = useState(''),[panel,setPanel] = useState(''), [pinned,setPinned] = useState(false), [find,setFind] = useState(''), [replacement,setReplacement] = useState(''), [href,setHref] = useState(''), [error,setError] = useState(''), [uploading,setUploading] = useState(false);
   live.current.pinned = pinned;
   const selection = useRef(null), fileInput = useRef(null), hydrated = useRef(false);
   const mentionOpen = view => view.state.plugins.some(plugin => String(plugin.spec?.key?.key || '').startsWith('workspace-mentions') && plugin.getState(view.state)?.active);
-  const extensions = useMemo(()=>[StarterKit.configure({link:{openOnClick:false}}),TextStyleKit.configure({lineHeight:false}),Schema,Highlight.configure({multicolor:true}),TextAlign.configure({types:['heading','paragraph']}),TableKit.configure({table:{resizable:false}}),OriginalImage,mentionExtension(live)],[]);
+  const extensions = useMemo(()=>[StarterKit.configure({link:{openOnClick:false},heading:{levels:[1,2,3]}}),TextStyleKit.configure({lineHeight:false}),Schema,Highlight.configure({multicolor:true}),TextAlign.configure({types:['heading','paragraph']}),TableKit.configure({table:{resizable:false}}),OriginalImage,mentionExtension(live)],[]);
   const editor = useEditor({ extensions, content:initialDocument || (initialMarkdown ? micromark(initialMarkdown) : EMPTY_DOCUMENT), shouldRerenderOnTransaction:false,
     editorProps:{attributes:{role:'textbox','aria-label':ariaLabel || (compact ? 'Texto con menciones' : 'Contenido del documento'),'aria-multiline':'true',spellcheck:'true'},handleKeyDown:(_view,event)=>{
       if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase()==='s') { event.preventDefault(); live.current.onSave?.(); return true; }
@@ -55,8 +56,13 @@ export default function RichDocument({ initialDocument, initialMarkdown, onChang
       return false;
     },
     // Capturas pegadas (sólo imagen, sin texto) en la conversación: se suben como imagen original del mensaje.
-    handlePaste:(_view,event)=>{
-      const items=[...(event.clipboardData?.files||[])].filter(file=>file.type.startsWith('image/'));
+    // Word, Google Docs, Pages y la web: se conserva la estructura y el formato con significado; se quita lo demás.
+    transformPastedHTML:html=>{const cleaned=cleanPastedHtml(html);setPasteNotice(cleaned.removedImages?`Se pegó el texto. ${cleaned.removedImages===1?'La imagen no se copia':`Las ${cleaned.removedImages} imágenes no se copian`} al pegar: añáde${cleaned.removedImages===1?'la':'las'} con el botón Imágenes.`:'');return cleaned.html;},
+    handlePaste:(view,event)=>{
+      const clipboard=event.clipboardData,plain=clipboard?.getData('text/plain')||'',html=clipboard?.getData('text/html')||'';
+      // Markdown pegado (ChatGPT, notas, VS Code): se convierte en formato. Se respeta el HTML de procesadores de texto.
+      if(plain&&looksLikeMarkdown(plain)&&(!html||/white-space:\s*pre|font-family:\s*(menlo|monaco|consolas|"?courier|"?sf mono|"?jetbrains|"?fira code)/i.test(html))){event.preventDefault();view.pasteHTML(markdownToHtml(plain));return true;}
+      const items=[...(clipboard?.files||[])].filter(file=>file.type.startsWith('image/'));
       if(!items.length||!live.current.pasteImage||event.clipboardData.getData('text/html')||event.clipboardData.getData('text/plain'))return false;
       event.preventDefault();void live.current.pasteImage(items[0]);return true;
     }},
@@ -97,7 +103,8 @@ export default function RichDocument({ initialDocument, initialMarkdown, onChang
       {panel==='outline'&&<nav aria-label="Índice del documento">{state.headings.length?state.headings.map(heading=><button type="button" key={heading.pos} style={{paddingLeft:`${(heading.level-1)*12+8}px`}} onClick={()=>editor.chain().focus().setTextSelection(heading.pos+1).scrollIntoView().run()}>{heading.text||'Título sin texto'}</button>):<p>Añade títulos y subtítulos para recorrer el documento.</p>}</nav>}{error&&<p role="alert" className="gw-error">{error}</p>}
     </section>,document.body)}
     <EditorContent editor={editor} className="gw-writing-paper" data-empty={state.empty||undefined} data-placeholder={placeholder||undefined}/>
-    {!compact&&<footer className="gw-opal-editor-foot"><span>{count} {count===1?'palabra':'palabras'}</span><small>Escribe @ para mencionar a un integrante</small></footer>}
+    {pasteNotice&&<p role="status" className="gw-opal-paste-notice">{pasteNotice}<button type="button" aria-label="Cerrar aviso" onClick={()=>setPasteNotice('')}>×</button></p>}
+    {!compact&&<footer className="gw-opal-editor-foot"><span>{count} {count===1?'palabra':'palabras'}</span><small>Escribe @ para mencionar · Markdown: **negrita**, *cursiva*, ## título, - lista</small></footer>}
     {saveState&&<button type="button" className="gw-opal-save-orb" data-state={saveState.state} aria-label={saveState.text} title={saveState.text} onClick={()=>setPanel(panel==='save'?'':'save')}><span>{saveState.state==='saved'?<Check size={18}/>:saveState.state==='error'?<CloudOff size={18}/>:<span className="gw-opal-orb-dot"/>}</span><small>{saveState.state==='saved'?'Guardado':saveState.state==='saving'?'Guardando':saveState.state==='error'?'Sin guardar':'Pendiente'}</small></button>}
     {panel==='save'&&<aside className="gw-opal-save-details" role="status"><strong>{saveState?.text}</strong><p>Guardar conserva tu borrador privado. Enviar a revisión comparte una versión con las personas autorizadas.</p></aside>}
   </div>;
