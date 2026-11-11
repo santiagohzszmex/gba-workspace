@@ -4,6 +4,7 @@
   "installCommand": "npm ci",
   "framework": null,
   "routes": [
+    { "src": "^/api/workspace-push$", "methods": ["GET"], "dest": "https://gba.software/api/workspace-push" },
     { "src": "^/workspace/web/?$", "dest": "/workspace/web/index.html" },
     { "src": "^/$", "status": 308, "headers": { "Location": "/workspace/web/" } },
     { "handle": "filesystem" }

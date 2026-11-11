@@ -20,4 +20,12 @@ const owner='10000000-0000-4000-8000-000000000001',id='20000000-0000-4000-8000-0
 listeners.push({data:{json:()=>({v:1,owner,notificationId:id,deliveryId:id,title:'private',url:'https://evil.example'})},waitUntil:p=>waited=p});await waited;
 assert.equal(shown.length,1);assert.equal(JSON.stringify(shown).includes('private'),false);assert.match(shown[0][1].tag,new RegExp(id));
 listeners.notificationclick({notification:{data:{owner,notificationId:id},close(){}},waitUntil:p=>waited=p});await waited;assert.equal(opened.length,1);assert.equal(new URL(opened[0]).origin,'https://gba.software');assert.equal(new URL(opened[0]).pathname,'/workspace/web/');
-console.log('PASS: notification acknowledgment races, preserved new arrivals, disposal and safe service-worker delivery.');
+// workspace.gba.software no tiene el servicio de avisos: sólo la consulta de configuración (GET) se reenvía a gba.software.
+const routes=JSON.parse(await fs.readFile('vercel.json','utf8')).routes;
+const pushRoute=routes.findIndex(r=>r.src==='^/api/workspace-push$');
+assert.ok(pushRoute>=0,'falta la ruta de configuración de avisos');
+assert.deepEqual(routes[pushRoute],{src:'^/api/workspace-push$',methods:['GET'],dest:'https://gba.software/api/workspace-push'});
+assert.ok(pushRoute<routes.findIndex(r=>r.handle==='filesystem'));
+assert.equal(routes.filter(r=>String(r.dest||'').startsWith('http')).length,1,'ninguna otra ruta sale del dominio');
+assert.match(await fs.readFile('src/workspace/devicePush.mjs','utf8'),/fetch\('\/api\/workspace-push',\{cache:'no-store'\}\)/);
+console.log('PASS: notification acknowledgment races, preserved new arrivals, disposal, safe service-worker delivery and push configuration route.');
