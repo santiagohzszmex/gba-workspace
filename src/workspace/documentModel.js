@@ -34,7 +34,7 @@ export function taskIsMine(task, userId) { return task.responsible_id === userId
 export const EDITABLE_STATES = ['pending', 'assigned', 'in_progress', 'changes_requested'];
 export function reviewAction(task, permissions, area) {
   if (task.qa_blocked || task.state === 'blocked') return null;
-  if (task.state === 'review' && permissions[`review.approve_${area?.specialty}`]) return { action: 'task.transition', state: 'area_approved', label: task.kind==='image'?'Aprobar por el área':'Aceptar documento' };
+  if (task.state === 'review' && permissions[`review.approve_${area?.specialty}`]) return { action: 'task.transition', state: 'area_approved', label: ['image','video'].includes(task.kind)?'Aprobar por el área':'Aceptar documento' };
   if (task.state === 'area_approved' && permissions['review.queue_qa']) return { action: 'task.transition', state: 'in_qa', label: 'Pasar a QA' };
   if (task.state === 'in_qa' && permissions['qa.approve'] && !task.qa_blocked) return { action: 'task.transition', state: 'qa_approved', label: 'Aprobar QA' };
   if (task.state === 'qa_approved' && !task.final_approved_by && permissions['publication.approve_final']) return { action: 'publication.approve', label: 'Aprobar publicación final' };
@@ -69,10 +69,10 @@ export function initialSection(data, projectId, actorId) {
 export function nextStep(task, personal = false) {
   if (task.qa_blocked) return 'QA debe verificar la corrección antes de retomar el trabajo.';
   return {
-    pending: 'Falta asignar una persona responsable.', assigned: task.kind==='image'?(personal?'Entrega una imagen (PNG) y envíala a revisión.':'La persona asignada entrega una imagen (PNG) y la envía a revisión.'):(personal ? 'Prepara tu documento y envíalo a revisión.' : 'La persona asignada prepara el documento y lo envía a revisión.'),
+    pending: 'Falta asignar una persona responsable.', assigned: task.kind==='video'?(personal?'Sube la copia de revisión del video (MP4, hasta 720p) y envíala a revisión.':'La persona asignada sube la copia de revisión del video y la envía a revisión.'):task.kind==='image'?(personal?'Entrega una imagen (PNG) y envíala a revisión.':'La persona asignada entrega una imagen (PNG) y la envía a revisión.'):(personal ? 'Prepara tu documento y envíalo a revisión.' : 'La persona asignada prepara el documento y lo envía a revisión.'),
     in_progress: personal ? 'Continúa tu borrador y envíalo cuando esté listo.' : 'La persona asignada está preparando la entrega.', changes_requested: personal ? 'Corrige la entrega con las indicaciones recibidas y vuelve a enviarla.' : 'La persona asignada debe aplicar las correcciones y enviar otra versión.',
-    review: task.kind==='image'?'Falta la aprobación del área. Después sigue QA y la aprobación final de Dirección.':'El área debe revisar esta versión y aceptarla o solicitar correcciones.',
-    area_approved: task.kind==='image'?'Aprobada por el área. Después sigue QA y la aprobación final de Dirección.':'La entrega aceptada está disponible en Documentos. El equipo puede consultarla.',
+    review: task.kind==='video'?'El área revisa el video: comenta en momentos exactos, aprueba o pide cambios.':task.kind==='image'?'Falta la aprobación del área. Después sigue QA y la aprobación final de Dirección.':'El área debe revisar esta versión y aceptarla o solicitar correcciones.',
+    area_approved: task.kind==='video'?'Video aprobado por el área. Después sigue QA y la aprobación final de Dirección.':task.kind==='image'?'Aprobada por el área. Después sigue QA y la aprobación final de Dirección.':'La entrega aceptada está disponible en Documentos. El equipo puede consultarla.',
     in_qa: 'QA revisa archivos, créditos, permisos y exportaciones.',
     qa_approved: task.final_approved_by ? 'La publicación final está autorizada; falta ejecutarla.' : 'Falta la aprobación final de Dirección.',
     published: 'Publicado. Se conserva la versión y su autoría.', archived: 'Archivado para consulta.',

@@ -1,6 +1,7 @@
 import {inspectPngHeader} from './pngHeader.mjs';
 import {inspectLayered} from './layered.mjs';
 import {cloudflareProcessor} from './previews.mjs';
+import {inspectMp4} from './mp4.mjs';
 const uuid='[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}';
 const hex=b=>[...new Uint8Array(b)].map(x=>x.toString(16).padStart(2,'0')).join('');
 const problem=(message,status=400)=>Object.assign(Error(message),{status});
@@ -55,7 +56,7 @@ export function createImageGateway({completionHash=null,fetcher=fetch,logger=con
    if(origin&&!allowed.includes(origin))throw problem('Origen no autorizado.',403);
    if(request.method==='OPTIONS')return new Response(null,{status:204,headers});
    if(!env.ORIGINALS||!env.GATEWAY_KEY||!env.SUPABASE_URL||!env.SUPABASE_PUBLISHABLE_KEY)throw problem('Almacenamiento pendiente de conexión.',503);
-   const download=url.pathname.match(new RegExp(`^/image-downloads/(${uuid})/(original|preview|thumbnail)$`,'i'));
+   const download=url.pathname.match(new RegExp(`^/image-downloads/(${uuid})/(original|preview|thumbnail|stream)$`,'i'));
    if(download&&request.method==='GET'){
     const token=url.searchParams.get('token')||'';if(token.length>4096||!token.includes('.'))throw problem('Enlace inválido.',403);
     const [body,sig,...extra]=token.split('.');if(extra.length)throw problem('Enlace inválido.',403);
@@ -75,7 +76,7 @@ export function createImageGateway({completionHash=null,fetcher=fetch,logger=con
    // Connector tokens use their own reviewed dispatcher; not interpreted as JWTs.
    if(bearer.startsWith('Bearer wsc_'))throw problem('Esta operación requiere una sesión de GBA ID.',403);
    rpc=rpcFor(env,bearer);
-   const sign=url.pathname.match(new RegExp(`^/images/files/(${uuid})/(original|preview|thumbnail)/link$`,'i'));
+   const sign=url.pathname.match(new RegExp(`^/images/files/(${uuid})/(original|preview|thumbnail|stream)/link$`,'i'));
    if(sign&&request.method==='POST'){
     const file=await rpc('workspace_image_file',{p_data:{asset_id:sign[1],operation:sign[2]}});if(!file.available)return json(file);
     const data={asset_id:file.asset_id,file_id:file.file_id,operation:file.operation,user_id:file.user_id,session_id:file.session_id,expires:Math.floor(now()/1000)+file.ttl};
@@ -122,20 +123,23 @@ export function createImageGateway({completionHash=null,fetcher=fetch,logger=con
     if(!object)object=await env.ORIGINALS.resumeMultipartUpload(s.asset.object_key,s.upload_id).complete(s.parts.map(({partNumber,etag})=>({partNumber,etag})));
     if(object.size!==s.asset.size_bytes)throw problem('El tamaño del original no coincide.');
     const verifyFull=async()=>{const original=await env.ORIGINALS.get(s.asset.object_key);if(!original?.body)throw problem('Original no disponible.',502);return hashStream(original.body,s.asset.size_bytes);};
-    const sha256=completionHash?await completionHash({request,env,asset:s.asset,verifyFull}):await verifyFull();if(sha256!==s.asset.sha256)throw problem('La integridad del original no coincide.');
+    // Video: cada parte ya se calculó en el servidor al recibirla; releer 300 MB completos rebasaría el límite de CPU.
+    // La huella completa del video queda como declaración del cliente (sha256_source en la base de datos).
+    const sha256=s.asset.role==='video'?s.asset.sha256:completionHash?await completionHash({request,env,asset:s.asset,verifyFull}):await verifyFull();if(sha256!==s.asset.sha256)throw problem('La integridad del original no coincide.');
     let info;
-    try{if(s.asset.role==='png')info=await inspectPngHeader(rangeFile(env.ORIGINALS,s.asset),s.policy);else info=await inspectLayered(rangeFile(env.ORIGINALS,s.asset),s.asset.format,s.policy);}
+    try{if(s.asset.role==='png')info=await inspectPngHeader(rangeFile(env.ORIGINALS,s.asset),s.policy);else if(s.asset.role==='video')info=await inspectMp4(rangeFile(env.ORIGINALS,s.asset));else info=await inspectLayered(rangeFile(env.ORIGINALS,s.asset),s.asset.format,s.policy);}
     catch(error){throw problem(error.message);}
     s=await storage(rpc,'verified',{session_id:id,lease_id:lease,sha256,size_bytes:s.asset.size_bytes,...info});lease=null;
     let preview={state:'disabled'};if(s.asset.role==='png'&&s.policy.derivatives_enabled){
      try{preview=await processPreview(env,rpc,s.asset.id)||{state:'pending'};}catch{preview={state:'unavailable',message:'Vista previa no disponible; descarga el original'};}
     }
+    if(s.asset.role==='video')return json({...publicSession(s),duration_ms:info.duration_ms,preview_state:'not_applicable',message:'Video guardado. Ya puedes enviarlo a revisión.'});
     return json({...publicSession(s),preview_state:preview.state,message:preview.message||'Original guardado. La aprobación del área se realiza por separado.'});
    }
    throw problem('Ruta no disponible.',404);
   }catch(error){
    // Deterministic invalid files are quarantined until R2 deletion is confirmed.
-   if(s&&lease&&url.pathname.endsWith('/complete')&&error.status===400&&/PNG inválido|integridad|tamaño del original|PSD|TIFF|ZIP|KRA/i.test(error.message)){
+   if(s&&lease&&url.pathname.endsWith('/complete')&&error.status===400&&/PNG inválido|integridad|tamaño del original|PSD|TIFF|ZIP|KRA|MP4|QuickTime|H\.264|720p|dura más|audio|Video inválido|Video en formato/i.test(error.message)){
     try{await storage(rpc,'failed',{session_id:s.id,lease_id:lease});lease=null;const job=await machine(rpc,'cleanup.claim',{session_id:s.id});if(job)await cleanSession(env,rpc,job);}catch{}
    }
    logger.error(JSON.stringify({message:'Image gateway operation failed',status:error.status||502}));
@@ -146,8 +150,11 @@ export function createImageGateway({completionHash=null,fetcher=fetch,logger=con
   const rpc=rpcFor(env);let cleaned=0;
   for(let i=0;i<5;i++){const job=await machine(rpc,'cleanup.claim');if(!job)break;try{await cleanSession(env,rpc,job);cleaned++;}catch{logger.error('Image cleanup postponed; quota retained');}}
   try{await processPreview(env,rpc);}catch{logger.error('Image preview job postponed');}
+  // Copias de video viejas: se borran después de publicar; la cuota se libera sólo con el borrado confirmado.
+  let purged=0;
+  for(let i=0;i<5;i++){let job;try{job=await machine(rpc,'video.purge.claim');}catch{logger.error('Video purge unavailable');break;}if(!job)break;try{await env.ORIGINALS.delete(job.object_key);if(await env.ORIGINALS.head(job.object_key))throw Error('unconfirmed');await machine(rpc,'video.purge.confirm',{asset_id:job.asset_id,lease_id:job.lease_id,deleted:true});purged++;}catch{logger.error('Video purge postponed; quota retained');}}
   const derivative=await machine(rpc,'derived.claim');if(derivative){await env.ORIGINALS.delete(derivative.object_key);if(await env.ORIGINALS.head(derivative.object_key))throw Error('Preview deletion unconfirmed');await machine(rpc,'derived.confirm',{reservation_id:derivative.id,lease_id:derivative.cleanup_lease,deleted:true});}
-  return {cleaned};
+  return {cleaned,purged};
  }
  };
  return result;

@@ -31,7 +31,7 @@ export function savedLabel(value, now = new Date()) {
 export const isFinished = state => FINISHED_STATES.includes(state);
 
 export function Status({ state,kind }) {
-  return <span className="gw-wk-status" data-tone={TONES[state] || 'idle'}><i aria-hidden="true" />{kind==='image'&&state==='area_approved'?'Aprobada por el área':STATES[state] || state}</span>;
+  return <span className="gw-wk-status" data-tone={TONES[state] || 'idle'}><i aria-hidden="true" />{kind==='image'&&state==='area_approved'?'Aprobada por el área':kind==='video'&&state==='area_approved'?'Aprobado por el área':STATES[state] || state}</span>;
 }
 
 export const initials = name => (name || '').trim().split(/\s+/).slice(0, 2).map(part => part[0]).join('').toUpperCase();

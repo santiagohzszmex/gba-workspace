@@ -24,11 +24,12 @@ import { rpc } from '../workspace/ui';
 import '../workspace/workspace.css';
 import '../workspace/images/images.css';
 import {imageStorageApi} from '../workspace/images/imageApi';
+import {videoStorageApi} from '../workspace/video/videoApi';
 import {clearImageCache} from '../workspace/images/originalCache.mjs';
 
 const EMPTY = { projects: [], areas: [], tasks: [], members: [], events: [], audit: [], versions: [], comments: [], assignments: [], grants: [], delegations: [], approvedDocuments: [], references: [], referenceStorage: {}, areaPermissions: {}, taskPermissions: {} };
 function savedMessage(action, payload) {
-  if (action === 'task.transition' && payload.state === 'area_approved') return payload.image ? 'Imagen aprobada por el área. Continúa con QA.' : 'Documento aceptado. Ya está disponible en Documentos.';
+  if (action === 'task.transition' && payload.state === 'area_approved') return payload.video ? 'Video aprobado por el área. Continúa con QA.' : payload.image ? 'Imagen aprobada por el área. Continúa con QA.' : 'Documento aceptado. Ya está disponible en Documentos.';
   return ({'member.save':'Acceso del integrante guardado.','grant.save':'Rol y alcance guardados. Puedes realizar otra asignación.','assignment.save':'Función organizacional guardada.','delegation.save':'Delegación registrada con su vigencia.','grant.revoke':'Rol revocado.','delegation.revoke':'Delegación revocada.','task.assign':'Asignación guardada.','project.save':'Edición guardada.','project.create':'Edición creada. Añade sus referencias y asignaciones.','event.save':'Evento guardado en el calendario.'})[action] || 'Cambios guardados en Workspace.';
 }
 const TABLES = { projects: 'workspace_projects', areas: 'workspace_areas', tasks: 'workspace_deliverables', events: 'workspace_events', audit: 'workspace_audit', assignments: 'workspace_assignments', grants: 'workspace_access_grants', delegations: 'workspace_delegations' };
@@ -52,9 +53,10 @@ export default function Workspace({ previewMode = false }) {
   const [hasDraft, setHasDraft] = useState(false);
   const [pendingNavigation, setPendingNavigation] = useState(null);
   const [demoActorKey, setDemoActorKey] = useState('researcher');
-  const demoState = useRef(null), imageDemoModule=useRef(null);
+  const demoState = useRef(null), imageDemoModule=useRef(null), videoDemoModule=useRef(null);
   const lapisPreview=previewMode && import.meta.env.DEV && new URLSearchParams(location.search).get('lapis-preview')==='1';
-  const viewDemo=(state,person,id)=>({...workflowDemoData(state,person,id),images:lapisPreview&&imageDemoModule.current?imageDemoModule.current.imageDemoBundle(state,person,id):{enabled:false},ultramar:state.ultramar||{enabled:true,snapshots:{},versions:{}}});
+  const videoPreview=previewMode && import.meta.env.DEV && new URLSearchParams(location.search).get('video-preview')==='1';
+  const viewDemo=(state,person,id)=>({...workflowDemoData(state,person,id),images:lapisPreview&&imageDemoModule.current?imageDemoModule.current.imageDemoBundle(state,person,id):{enabled:false},video:videoPreview&&videoDemoModule.current?videoDemoModule.current.videoDemoBundle(state,person,id):{enabled:false},ultramar:state.ultramar||{enabled:true,snapshots:{},versions:{}}});
   if (previewMode && !demoState.current) { demoState.current = createWorkflowDemo(); if(import.meta.env.DEV && new URLSearchParams(location.search).get('closed-preview')==='1')demoState.current.projects[0].status='closed'; }
   const actor = DEMO_ACTORS[demoActorKey];
   const generation = useRef(0);
@@ -71,6 +73,7 @@ export default function Workspace({ previewMode = false }) {
     try {
       if (previewMode) {
         if(lapisPreview){imageDemoModule.current ||= await import('../workspace/images/imageDemo');await imageDemoModule.current.initializeImageDemo(demoState.current);}
+        if(videoPreview){videoDemoModule.current ||= await import('../workspace/video/videoDemo');videoDemoModule.current.initializeVideoDemo(demoState.current);}
         if(seq!==generation.current)return;
         const id = selectedEdition(demoState.current.projects.filter(item=>actor.projects.includes(item.id)),projectId,requestedScreen);
         setContext({ units: [{ id: 'gimg-demo', name: 'GIMG' }], platform_owner: actor.platformOwner === true, keynotes_access: actor.keynotesAccess === true });
@@ -102,7 +105,8 @@ export default function Workspace({ previewMode = false }) {
       const id = selectedEdition(next.projects,projectId,requestedScreen);
       const contextualTask = next.tasks.find(item => item.id === selectedId && item.project_id === id) || next.tasks.find(item => item.project_id === id);
       const area = contextualTask?.area_id || next.areas.find(item => item.project_id === id)?.id || null;
-      const [unitPerm, directoryPerm, workPermissions, approvedDocuments, referenceBundle, removed, opal, support, team, images, deadlines, ultramar] = await Promise.all([
+      const videoProject = next.projects.find(item => item.id === id)?.kind === 'video';
+      const [unitPerm, directoryPerm, workPermissions, approvedDocuments, referenceBundle, removed, opal, support, team, images, deadlines, ultramar, video] = await Promise.all([
         rpc('workspace_permissions', { p_unit: unit }),
         rpc('workspace_permissions', { p_unit: unit, p_project: id || null, p_area: area, p_deliverable: contextualTask?.id || null }),
         id ? rpc('workspace_work_permissions', { p_project_id: id }) : { project: {}, areas: {}, tasks: {}, version_documents: {} },
@@ -114,12 +118,13 @@ export default function Workspace({ previewMode = false }) {
         id ? rpc('workspace_team_bundle',{p_project_id:id}) : {members:[],areas:[]},
         id ? rpc('workspace_image_bundle',{p_project_id:id}).catch(error=>{if(['PGRST202','42883'].includes(error.code))return {enabled:false};throw error;}) : {enabled:false},
         id ? rpc('workspace_deadline_facts',{p_project_id:id}) : {},
-        id ? rpc('workspace_ultramar_bundle',{p_project_id:id}).catch(error=>{if(['PGRST202','42883'].includes(error.code))return {enabled:false};throw error;}) : {enabled:false}
+        id ? rpc('workspace_ultramar_bundle',{p_project_id:id}).catch(error=>{if(['PGRST202','42883'].includes(error.code))return {enabled:false};throw error;}) : {enabled:false},
+        id && videoProject ? rpc('workspace_video_bundle',{p_project_id:id}).catch(error=>{if(['PGRST202','42883'].includes(error.code))return {enabled:false};throw error;}) : {enabled:false}
       ]);
       if (seq !== generation.current) return;
       const perm = { ...workPermissions.project, 'directory.unit_wide': Boolean(unitPerm['unit.members.read']), 'unit.members.read': Boolean(directoryPerm['unit.members.read']) };
       for (const [key, value] of Object.entries(unitPerm)) if ((key.startsWith('unit.') && key !== 'unit.members.read') || key === 'project.create') perm[key] = value;
-      next.referencePermissions = workPermissions.project || {}; next.areaPermissions = workPermissions.areas || {}; next.taskPermissions = workPermissions.tasks || {}; next.approvedDocuments = approvedDocuments; next.references = referenceBundle.references; next.referenceStorage = referenceBundle.storage; next.taskReferences = opal.task_references; next.privateTaskReferences = opal.private_references; next.documentOriginals = opal.originals; next.support = support; next.team = team; next.images=images; next.deadlines=deadlines; next.ultramar=ultramar; next.tasks=next.tasks.map(t=>t.project_id===id?withDeadlineFacts(t,next):t);
+      next.referencePermissions = workPermissions.project || {}; next.areaPermissions = workPermissions.areas || {}; next.taskPermissions = workPermissions.tasks || {}; next.approvedDocuments = approvedDocuments; next.references = referenceBundle.references; next.referenceStorage = referenceBundle.storage; next.taskReferences = opal.task_references; next.privateTaskReferences = opal.private_references; next.documentOriginals = opal.originals; next.support = support; next.team = team; next.images=images; next.video=video; next.deadlines=deadlines; next.ultramar=ultramar; next.tasks=next.tasks.map(t=>t.project_id===id?withDeadlineFacts(t,next):t);
       next.members = directoryPerm['unit.members.read'] ? await rpc('workspace_directory', { p_unit: unit, p_project: id || null, p_area: area, p_deliverable: contextualTask?.id || null }) : [];
       const ids = next.tasks.map(item => item.id);
       const contents = await Promise.all([['versions', 'workspace_versions'], ['comments', 'workspace_comments'], ['dependencies', 'workspace_dependencies']].map(async ([key, table]) => {
@@ -267,6 +272,24 @@ export default function Workspace({ previewMode = false }) {
     if(action==='version.submit')setNotice('Imagen enviada a revisión. El área ya puede revisar esta versión.');
     return result;
   }
+  async function videoApi(action,item,value={},revision=null){
+    if(previewMode){
+      if(!videoPreview||!videoDemoModule.current)throw Error('El video requiere la demostración local de Labradorita.');
+      const result=await videoDemoModule.current.videoDemoApi(demoState.current,actor,action,item,value,revision);
+      if(!['plan.get','link','upload','cancel'].includes(action))setData(viewDemo(demoState.current,actor,projectId));
+      if(action==='upload')setData(viewDemo(demoState.current,actor,projectId));
+      if(action==='version.submit')setNotice('Video enviado a revisión. Demostración local.');
+      if(action==='publication.add')setNotice('Publicación registrada. Demostración local.');
+      return result;
+    }
+    if(['upload','cancel','plan.get','link'].includes(action))return videoStorageApi(action,item,value,{actorId:userId,gateway:data.referenceStorage?.gateway_url});
+    const result=await rpc('workspace_video_command',{p_action:action,p_deliverable_id:item.id,p_data:value,p_revision:revision});
+    await load(true);
+    if(action==='version.submit')setNotice('Video enviado a revisión. El área ya puede revisarlo.');
+    if(action==='kind.set')setNotice('Tipo de entrega guardado.');
+    if(action==='publication.add')setNotice('Publicación registrada.');
+    return result;
+  }
   async function supportApi(action, value, revision = 0) {
     action=action.replace(/^support\./,'');
     if (busy || loading) throw Error('Espera a que termine el guardado actual.');
@@ -406,12 +429,12 @@ export default function Workspace({ previewMode = false }) {
       {screen === 'keynotes' && context?.keynotes_access ? <KeynotesWorkspace previewMode={previewMode} /> : screen === 'settings' ? <WorkspaceSettings context={context} data={data} permissions={permissions} command={command} busy={disabled || previewMode} loading={loading} unitId={unitId} projectId={projectId} onUnitChange={selectUnit} onProjectChange={selectProject} previewMode={previewMode} onNotice={setNotice} actorId={userId} peopleCommand={peopleCommand} removedEditions={removedEditions} onRemoveEdition={(...args)=>changeEditionRemoval('project.remove',...args)} onRestoreEdition={item=>changeEditionRemoval('project.restore',item)} /> : <>
         {visibleProjects.length > 0 && <EditionTabs projects={visibleProjects} selectedId={projectId} onSelect={selectProject} busy={busy} closed={screen==='closed'} />}
         {loading ? <p className="gw-loading" role="status">Abriendo edición…</p> : !context?.units?.length ? <div className="gw-empty"><h2>Tu equipo está por comenzar.</h2><p>Dirección debe incorporar tu GBA ID y asignarte permisos para una unidad. Una licencia de escritorio no concede acceso editorial.</p></div> : !displayedProject ? <div className="gw-empty"><h2>{screen==='closed'?'Todavía no hay ediciones cerradas.':'No hay ediciones de trabajo disponibles.'}</h2><p>{screen==='closed'?'Las ediciones cerradas aparecerán aquí para consulta, según tus accesos.':'Las ediciones cerradas se conservan en la sección Cerradas.'}</p>{screen!=='closed' && editionsForScreen(data.projects,'closed').length>0 && <button type="button" onClick={()=>selectScreen('closed')}>Ver ediciones cerradas</button>}{permissions['project.create'] && <button type="button" onClick={() => setScreen('settings')}>Ir a Configuración</button>}</div> : <section role="tabpanel" id="workspace-edition-panel" aria-labelledby={`workspace-edition-${projectId}`} tabIndex={0}>
-          {isClosedEdition(project) ? <ClosedEdition key={`${project.id}-${notificationTarget?.id||notificationTarget?.reference_id||notificationTarget?.deliverable_id||notificationTarget?.support_id||notificationTarget?.delivery_id||''}`} unitId={unitId} inboxApi={previewMode?undefined:inboxApi} project={project} data={data} actorId={userId} permissions={permissions} imageApi={imageApi} workApi={workApi} initialTarget={notificationTarget} initialTaskId={notificationTarget?.deliverable_id} onSettings={()=>selectScreen('settings')}/> : <>
+          {isClosedEdition(project) ? <ClosedEdition key={`${project.id}-${notificationTarget?.id||notificationTarget?.reference_id||notificationTarget?.deliverable_id||notificationTarget?.support_id||notificationTarget?.delivery_id||''}`} unitId={unitId} inboxApi={previewMode?undefined:inboxApi} project={project} data={data} actorId={userId} permissions={permissions} imageApi={imageApi} videoApi={videoApi} workApi={workApi} initialTarget={notificationTarget} initialTaskId={notificationTarget?.deliverable_id} onSettings={()=>selectScreen('settings')}/> : <>
           <EditionNavigation section={visibleSection} onSelect={selectSection} canAssign={canAssign} canReview={canReview} canWork={canWork} canTeam={canTeam} />
-          {visibleSection === 'work' && <PersonalWork ultramarApi={ultramarApi} key={`${project.id}-${userId}`} initialSupportId={selectedSupportId} initialDeliveryId={notificationTarget?.delivery_id} initialAnchorId={notificationTarget?.anchor_id} initialImageNoteId={notificationTarget?.image_note_id} initialImageVersionId={notificationTarget?.image_version_id} imageApi={imageApi} inboxApi={previewMode ? undefined : inboxApi} unitId={unitId} supportApi={supportApi} project={project} data={data} task={task} actorId={userId} command={command} api={workApi} previewMode={previewMode} busy={disabled} onPick={item => pick(item, 'work')} onDirtyChange={setHasDraft} onReference={() => selectSection('documents')} referenceApi={referenceApi} />}
+          {visibleSection === 'work' && <PersonalWork ultramarApi={ultramarApi} key={`${project.id}-${userId}`} initialSupportId={selectedSupportId} initialDeliveryId={notificationTarget?.delivery_id} initialAnchorId={notificationTarget?.anchor_id} initialImageNoteId={notificationTarget?.image_note_id} initialImageVersionId={notificationTarget?.image_version_id} imageApi={imageApi} videoApi={videoApi} inboxApi={previewMode ? undefined : inboxApi} unitId={unitId} supportApi={supportApi} project={project} data={data} task={task} actorId={userId} command={command} api={workApi} previewMode={previewMode} busy={disabled} onPick={item => pick(item, 'work')} onDirtyChange={setHasDraft} onReference={() => selectSection('documents')} referenceApi={referenceApi} />}
           {visibleSection === 'team' && <TeamWorkspace project={project} data={data} actorId={userId} onOpenTask={item=>pick(item,taskIsMine(item,userId)?'work':data.taskPermissions?.[item.id]?.['task.assign']?'assignments':'reviews')} onOpenDocument={item=>navigate(()=>{if(item.document_kind){setSelectedSupportId(item.id);setSection('work');}else{setNotificationTarget({reference_id:item.id});setSection('documents');}})}/>}
-          {visibleSection === 'assignments' && <AreaAssignments ultramarApi={ultramarApi} imageApi={imageApi} project={project} data={data} task={task} command={command} busy={disabled} onPick={item => pick(item, 'assignments')} onReview={item => pick(item, 'reviews')} referenceApi={referenceApi} />}
-          {visibleSection === 'reviews' && <EditionReviews imageApi={imageApi} initialNoteId={notificationTarget?.image_note_id} initialVersionId={notificationTarget?.image_version_id} actorId={userId} previewMode={previewMode} project={project} data={data} task={section === 'auto' ? undefined : task} command={command} busy={disabled} onPick={item => pick(item, 'reviews')} />}
+          {visibleSection === 'assignments' && <AreaAssignments ultramarApi={ultramarApi} imageApi={imageApi} videoApi={videoApi} project={project} data={data} task={task} command={command} busy={disabled} onPick={item => pick(item, 'assignments')} onReview={item => pick(item, 'reviews')} referenceApi={referenceApi} />}
+          {visibleSection === 'reviews' && <EditionReviews imageApi={imageApi} videoApi={videoApi} initialNoteId={notificationTarget?.image_note_id} initialVersionId={notificationTarget?.image_version_id} actorId={userId} previewMode={previewMode} project={project} data={data} task={section === 'auto' ? undefined : task} command={command} busy={disabled} onPick={item => pick(item, 'reviews')} />}
           {visibleSection === 'documents' && <EditionDocuments initialTaskId={notificationTarget?.deliverable_id || selectedId} initialReferenceId={notificationTarget?.reference_id} key={`${project.id}-${notificationTarget?.reference_id || notificationTarget?.deliverable_id || selectedId}`} project={project} data={data} actorId={userId} permissions={permissions} referenceApi={referenceApi} onDirtyChange={setHasDraft} busy={disabled} onOpenTask={item => pick(item, 'work')} />}
           {visibleSection === 'mention' && <MentionDocument target={notificationTarget} previewMode={previewMode} previewState={demoState.current} onOpenCurrent={target=>{setNotificationTarget(target);const current=data.tasks.find(item=>item.id===target.deliverable_id);if(target.reference_id)setSection('documents');else if(current)pick(current);else setSection('documents');}}/>}
           {visibleSection === 'calendar' && <EditionCalendar actorId={userId} project={project} data={data} permissions={permissions} command={command} busy={disabled} onPick={pick} />}

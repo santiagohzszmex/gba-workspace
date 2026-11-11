@@ -7,6 +7,8 @@ assert.match(csp,/script-src 'self' 'wasm-unsafe-eval';/);
 assert.match(csp,/frame-src blob:/);
 assert.doesNotMatch(csp,/frame-src[^;]*https:/);
 assert.match(csp,/img-src[^;]*blob:/);
+// Labradorita: las copias de revisión de video se reproducen desde la pasarela de archivos.
+assert.match(csp,/media-src 'self' blob: https:\/\/\*\.workers\.dev;/);
 assert.doesNotMatch(csp,/(?:^|\s)'unsafe-eval'(?:\s|;)/);
 for(const host of ['https://gba.software','https://vista.gba.software','https://*.supabase.co']) assert.ok(csp.includes(host));
 const web=fs.readFileSync('src/views/Workspace.jsx','utf8');

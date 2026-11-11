@@ -11,5 +11,5 @@ export function closedEditionData(data) {
   const maps = name => Object.fromEntries(Object.entries(data[name] || {}).map(([id,p])=>[id,consultationPermissions(p)]));
   return {...data, referencePermissions:consultationPermissions(data.referencePermissions),areaPermissions:maps('areaPermissions'),taskPermissions:maps('taskPermissions'),
     support:{...data.support,creation_areas:[],documents:(data.support?.documents || []).map(row=>({...row,can_edit:false,can_convert:false}))},
-    images:{...data.images,uploads_enabled:false}};
+    images:{...data.images,uploads_enabled:false},video:{...data.video,uploads_enabled:false}};
 }

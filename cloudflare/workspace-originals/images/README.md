@@ -41,3 +41,13 @@ El visor usa el PNG original. `upload_policy.derivatives_enabled=false` y el bin
 `GET /image-downloads/:asset/original` admite un único `Range: bytes=inicio-fin` (206, Content-Range, Accept-Ranges); rangos inválidos devuelven 416. Cada canje revalida permisos. El cliente renueva el enlace al reintentar y verifica el SHA del original completo. La caché separada por cuenta requiere autorización incluso para un acierto; se limpia al cerrar sesión. En escritorio, cuatro comandos IPC con claves cuenta/hash guardan bytes en la caché de la app (máximo descartable 512 MiB por cuenta); no exponen rutas arbitrarias.
 
 La migración `20261016203609_workspace_lapis_image_interface.sql` conserva `images_enabled` desactivado, añade el bundle seguro y avisos inmutables, ancla menciones a nota/versión y pospone la inclusión de imágenes en Documentos a Fase 6. No se debe revertir a la antigua restricción de raster decodificado sobre activos ya aceptados con verificación `header`. Para detener el uso, desactivar imágenes y derivados, conservar los datos y la limpieza de sesiones de Fase 2. No hay DDL destructivo de reversión.
+
+## Video (Labradorita 1.8.0, local, sin desplegar)
+
+Las copias de revisión de video usan estas mismas rutas con `role: "video"` y `format: "mp4"`. Al completar, la pasarela
+lee sólo las cabeceras de las cajas y el índice `moov` (`mp4.mjs`) y envía tamaño, duración y formatos a la base de datos,
+que aplica los límites vigentes (720p, 10 minutos, 300 MB, H.264). No se relee el archivo completo: las partes ya se
+hashearon en el servidor al recibirlas y la huella completa queda como declaración del cliente (`sha256_source`).
+Reproducción: `POST /images/files/:asset/stream/link` y `GET /image-downloads/:asset/stream?token=…` con rangos, en línea.
+El cron borra las copias viejas programadas después de publicar (`video.purge.claim` / `video.purge.confirm`); si la base de
+datos todavía no tiene la migración de video, ese paso se omite sin afectar la limpieza de imágenes.

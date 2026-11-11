@@ -5,6 +5,9 @@ import { ArrowRight, CalendarClock, FileText, Inbox, Plus, Search } from 'lucide
 import WorkEditor from './WorkEditor';
 import ImageDelivery from './images/ImageDelivery';
 import ImageSpecForm from './images/ImageSpecForm';
+import VideoDelivery from './video/VideoDelivery';
+import VideoKindForm from './video/VideoKindForm';
+import VideoPublications from './video/VideoPublications';
 import { CommandForm, choices } from './ui';
 import { PRIORITIES, dateLabel } from './gimgModel';
 import WorkConversation from './WorkConversation';
@@ -53,7 +56,7 @@ const WORK_GROUPS = [
 ];
 const groupOf = state => (WORK_GROUPS.find(([, , states]) => states.includes(state))?.[0]) || 'closed';
 
-export function PersonalWork({ project, data, task, actorId, command, api, busy, onPick, previewMode, onDirtyChange, onReference, referenceApi, supportApi, inboxApi, unitId, initialSupportId, initialDeliveryId, initialAnchorId, imageApi, initialImageNoteId, initialImageVersionId, ultramarApi }) {
+export function PersonalWork({ project, data, task, actorId, command, api, busy, onPick, previewMode, onDirtyChange, onReference, referenceApi, supportApi, inboxApi, unitId, initialSupportId, initialDeliveryId, initialAnchorId, imageApi, videoApi, initialImageNoteId, initialImageVersionId, ultramarApi }) {
   const [filter, setFilter] = useState(() => task && deliveryGroup(task)==='delivered' ? 'sent' : 'active');
   const [focus, setFocus] = useState(false);
   const [split, setSplit] = useState(false);
@@ -94,15 +97,15 @@ export function PersonalWork({ project, data, task, actorId, command, api, busy,
         {groups.map(group => <div key={group.id} className="gw-wk-group" role="group" aria-label={group.label}>
           <h2 className="gw-wk-group-label">{group.label}</h2>
           <ul className="gw-wk-items">{group.items.map(item => <li key={item.id}><button type="button" className="gw-wk-work-item" aria-current={selected?.id === item.id || undefined} onClick={() => openTask(item)}>
-            <strong>{item.title}</strong>{item.kind==='image'&&<span className="gw-wk-tag">Imagen · {item.current_version?`v${item.current_version}`:data.images?.drafts?.[item.id]?'Borrador':'Sin entregar'} · {project.title}</span>}
+            <strong>{item.title}</strong>{item.kind==='image'&&<span className="gw-wk-tag">Imagen · {item.current_version?`v${item.current_version}`:data.images?.drafts?.[item.id]?'Borrador':'Sin entregar'} · {project.title}</span>}{item.kind==='video'&&<span className="gw-wk-tag">Video · {item.current_version?`v${item.current_version}`:'Sin entregar'} · {project.title}</span>}
             <span className="gw-wk-work-meta"><Status state={item.state} kind={item.kind} /><DueLabel task={item} /></span>
-            {item.kind==='image'&&<span className="gw-image-entry">{['assigned','in_progress','changes_requested','pending'].includes(item.state)?'Entregar imagen →':'Ver imagen y notas →'}</span>}{item.block_reason && <span className="gw-wk-work-reason">{item.block_reason}</span>}
+            {item.kind==='image'&&<span className="gw-image-entry">{['assigned','in_progress','changes_requested','pending'].includes(item.state)?'Entregar imagen →':'Ver imagen y notas →'}</span>}{item.kind==='video'&&<span className="gw-image-entry">{['assigned','in_progress','changes_requested','pending'].includes(item.state)?'Subir video →':'Ver video y comentarios →'}</span>}{item.block_reason && <span className="gw-wk-work-reason">{item.block_reason}</span>}
           </button></li>)}</ul>
         </div>)}
         {!tasks.length && <p className="gw-wk-rail-empty">{filter === 'active' && mine.length ? 'No tienes entregas pendientes. Cambia a «Entregado» para ver lo enviado a revisión y lo aprobado.' : 'Aquí aparecerán tus entregas asignadas.'}</p>}
       </aside>
       {selected
-        ? <div className="gw-deadline-editor"><TaskDates task={withDeadlineFacts(selected,data)}/><UltramarOpen task={selected} data={data} previewMode={previewMode}/>{selected.kind==='image' ? <ImageDelivery key={selected.id} task={selected} data={data} actorId={actorId} api={imageApi} command={command} busy={busy} onDirtyChange={setWorkDirty} initialNoteId={initialImageNoteId} initialVersionId={initialImageVersionId}/> : <WorkEditor key={selected.id} task={selected} data={data} actorId={actorId} api={api} command={command} previewMode={previewMode} busy={busy} onDirtyChange={setWorkDirty} onReference={onReference} focus={focus} onFocusChange={setFocus} onSplitChange={setSplit} referenceApi={referenceApi} />}</div>
+        ? <div className="gw-deadline-editor"><TaskDates task={withDeadlineFacts(selected,data)}/><UltramarOpen task={selected} data={data} previewMode={previewMode}/>{data.areas.find(a=>a.id===selected.area_id)?.specialty==='social'&&<VideoPublications project={project} data={data} actorId={actorId} api={videoApi} busy={busy}/>}{selected.kind==='video' ? <VideoDelivery key={selected.id} task={selected} data={data} actorId={actorId} api={videoApi} command={command} busy={busy} onDirtyChange={setWorkDirty}/> : selected.kind==='image' ? <ImageDelivery key={selected.id} task={selected} data={data} actorId={actorId} api={imageApi} command={command} busy={busy} onDirtyChange={setWorkDirty} initialNoteId={initialImageNoteId} initialVersionId={initialImageVersionId}/> : <WorkEditor key={selected.id} task={selected} data={data} actorId={actorId} api={api} command={command} previewMode={previewMode} busy={busy} onDirtyChange={setWorkDirty} onReference={onReference} focus={focus} onFocusChange={setFocus} onSplitChange={setSplit} referenceApi={referenceApi} />}</div>
         : <div className="gw-wk-empty"><FileText size={30} aria-hidden="true" /><h2>No tienes entregas pendientes en esta edición.</h2><p>Puedes crear un documento ahora, escribir en privado y enviarlo a otra persona. Tus asignaciones aparecerán en esta pestaña cuando las recibas.</p><div className="gw-mywork-actions"><button type="button" className="gw-wk-btn gw-wk-btn-primary" disabled={busy || !data.support?.creation_areas?.length} onClick={newDocument}><Plus size={16}/>Nuevo documento</button><button type="button" className="gw-wk-btn" onClick={onReference}>Consultar referencias de la edición</button></div></div>}
     </div>}{pendingNavigation && <DraftExitDialog onStay={() => setPendingNavigation(null)} onDiscard={() => { const navigate=pendingNavigation; setPendingNavigation(null); setWorkDirty(false); setSupportDirty(false); onDirtyChange?.(false); navigate(); }} />}
   </section>;
@@ -110,7 +113,7 @@ export function PersonalWork({ project, data, task, actorId, command, api, busy,
 
 const FILTERS = [['all','Todo'],['late','Vencidas'],['soon','Vencen pronto'],['unassigned','Sin responsable'],['blocked','Bloqueado']];
 
-export function AreaAssignments({ project, data, task, command, busy, onPick, onReview, referenceApi, imageApi, ultramarApi }) {
+export function AreaAssignments({ project, data, task, command, busy, onPick, onReview, referenceApi, imageApi, videoApi, ultramarApi }) {
   const [query, setQuery] = useState('');
   const [referenceTarget,setReferenceTarget] = useState(null);
   const [filter, setFilter] = useState('all');
@@ -142,7 +145,7 @@ export function AreaAssignments({ project, data, task, command, busy, onPick, on
         <DeliveryGroups tasks={tasks} renderItem={item => { const person = nameOf(item.responsible_id); const due = deadlineStatus(item); return <li key={item.id}><button type="button" className="gw-wk-assign-item" aria-current={selected?.id === item.id || undefined} onClick={() => onPick(item)}>
           <Avatar name={person} />
           <span className="gw-wk-assign-main">
-            <strong>{item.title}</strong>{item.kind==='image'&&<span className="gw-wk-tag">Imagen · {item.current_version?`v${item.current_version}`:data.images?.drafts?.[item.id]?'Borrador':'Sin entregar'} · {project.title}</span>}
+            <strong>{item.title}</strong>{item.kind==='image'&&<span className="gw-wk-tag">Imagen · {item.current_version?`v${item.current_version}`:data.images?.drafts?.[item.id]?'Borrador':'Sin entregar'} · {project.title}</span>}{item.kind==='video'&&<span className="gw-wk-tag">Video · {item.current_version?`v${item.current_version}`:'Sin entregar'} · {project.title}</span>}
             <span className="gw-wk-assign-sub">{person || <em>Sin responsable</em>}{areas.length > 1 && ` · ${data.areas.find(row => row.id === item.area_id)?.name || ''}`}</span>
             <span className="gw-wk-assign-foot"><Status state={item.state} kind={item.kind} />{['high', 'urgent'].includes(item.priority) && <span className="gw-wk-tag" data-tone={item.priority}>{PRIORITIES[item.priority]}</span>}<DueLabel task={item}/></span>
           </span>
@@ -166,7 +169,9 @@ export function AreaAssignments({ project, data, task, command, busy, onPick, on
             <section className="gw-wk-card"><h3>Asignación</h3>
               {editable ? <CommandForm key={selected.id + selected.revision} initial={selected} busy={busy} fields={{ title: 'Título de la asignación', description: { label: 'Indicaciones para la persona', type: 'richtext', scope:{kind:'assignment',taskId:selected.id,projectId:project.id,areaId:selected.area_id} }, responsible_id: { label: 'Responsable', options: choices(data.members, 'display_name'), optional: true } }} button="Guardar asignación" onSave={values => command('task.save', { ...values, deliverable_id: selected.id, collaborator_ids: selected.collaborator_ids || [] }, selected.revision)} /> : <p className="gw-wk-note">La versión está aceptada. Su contenido y asignación se conservan.</p>}
             </section>
-            {data.images?.enabled&&<ImageSpecForm key={`spec-${selected.id}-${selected.revision}`} task={selected} spec={data.images.specs?.[selected.id]} api={imageApi} busy={busy} editable={Boolean(editable)&&(data.images.uploads_enabled??data.images.policy?.images_enabled)}/>}
+            <VideoKindForm key={`video-kind-${selected.id}-${selected.revision}`} task={selected} project={project} video={data.video} api={videoApi} busy={busy} editable={Boolean(editable)&&Boolean(permissions?.['task.assign'])}/>
+            {data.areas.find(a=>a.id===selected.area_id)?.specialty==='social'&&<VideoPublications project={project} data={data} api={videoApi} busy={busy}/>}
+            {data.images?.enabled&&selected.kind!=='video'&&<ImageSpecForm key={`spec-${selected.id}-${selected.revision}`} task={selected} spec={data.images.specs?.[selected.id]} api={imageApi} busy={busy} editable={Boolean(editable)&&(data.images.uploads_enabled??data.images.policy?.images_enabled)}/>}
             {ultramarApi&&<UltramarPrepare key={`ultramar-${selected.id}-${selected.revision}`} task={selected} data={data} api={ultramarApi} busy={busy} editable={Boolean(editable)}/>}
             <TaskMaterials task={selected} data={data} editable={Boolean(editable)} referenceApi={referenceApi} onOpen={row=>setReferenceTarget(row.reference_id)}/><WorkConversation task={selected} data={data} command={command} busy={busy} />
           </div>

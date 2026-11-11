@@ -20,7 +20,7 @@
       }
     ],
     "security": {
-      "csp": "default-src 'self'; script-src 'self' 'wasm-unsafe-eval'; worker-src 'self' blob:; style-src 'self' 'unsafe-inline'; img-src 'self' blob: asset: http://asset.localhost data: https:; connect-src 'self' https://*.workers.dev https://*.supabase.co wss://*.supabase.co https://gba.software https://www.gba.software https://vista.gba.software; frame-src blob:; object-src 'none'; base-uri 'self'"
+      "csp": "default-src 'self'; script-src 'self' 'wasm-unsafe-eval'; worker-src 'self' blob:; style-src 'self' 'unsafe-inline'; img-src 'self' blob: asset: http://asset.localhost data: https:; connect-src 'self' https://*.workers.dev https://*.supabase.co wss://*.supabase.co https://gba.software https://www.gba.software https://vista.gba.software; frame-src blob:; media-src 'self' blob: https://*.workers.dev; object-src 'none'; base-uri 'self'"
     }
   },
   "bundle": {

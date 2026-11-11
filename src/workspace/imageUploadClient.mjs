@@ -33,6 +33,6 @@ export function createImageUploader({gateway,authorization,hashFile,persist=asyn
    await persist({...plan,completed:state.state==='ready'});onProgress({received:file.size,total:file.size,parts:total,totalParts:total,state:state.state});return state;
   },
   async cancel(plan,{ownerId}={}){if(ownerId!==plan.owner_id)throw Error('La subida pertenece a otra cuenta');if(!plan.session_id)return {cancelled:true};const result=await call(`/images/uploads/${plan.session_id}`,{method:'DELETE'});await persist({...plan,cancelled:true});return result;},
-  async downloadLink(assetId,operation='original'){if(!['original','preview','thumbnail'].includes(operation))throw Error('Operación inválida');return call(`/images/files/${assetId}/${operation}/link`,{method:'POST'});}
+  async downloadLink(assetId,operation='original'){if(!['original','preview','thumbnail','stream'].includes(operation))throw Error('Operación inválida');return call(`/images/files/${assetId}/${operation}/link`,{method:'POST'});}
  };
 }
