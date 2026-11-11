@@ -72,5 +72,6 @@ reenvía sólo esa consulta GET a `gba.software/api/workspace-push`; los POST si
 ## Pendiente
 
 - Windows: Lapislázuli (1.7.x) y Ultramar en Windows.
-- 1.8.0: pegado desde Word/Google Docs/Pages, Workspace instalable en el celular y conversación tipo chat en cada
-  asignación, juntas en una sola actualización. Plan: [1.8.0-plan.md](workspace/1.8.0-plan.md).
+- 1.8.0 Labradorita: pegado desde Word/Google Docs/Pages, Workspace instalable en el celular, conversación tipo chat en
+  cada asignación y producciones de video y animación, juntas en una sola actualización. Plan:
+  [1.8.0-plan.md](workspace/1.8.0-plan.md).
