@@ -9,7 +9,7 @@
   "r2_buckets": [{"binding":"ORIGINALS","bucket_name":"workspace-originals"}],
   "vars": {
     "SUPABASE_URL": "https://wgihpztgwsovhykboyru.supabase.co",
-    "ALLOWED_ORIGINS": "https://gba.software,https://www.gba.software,https://vista.gba.software,http://tauri.localhost,https://tauri.localhost,tauri://localhost,null"
+    "ALLOWED_ORIGINS": "https://gba.software,https://www.gba.software,https://vista.gba.software,https://workspace.gba.software,http://tauri.localhost,https://tauri.localhost,tauri://localhost,null"
   },
   // Images binding disabled in Phase 3; replaceable processor code is retained.
   "triggers": {"crons":["*/15 * * * *"]},
