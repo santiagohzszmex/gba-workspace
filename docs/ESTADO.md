@@ -11,9 +11,17 @@ Una sola tabla con lo que está publicado en cada canal. Actualizar en cada publ
 | Canal compartido (instalaciones antiguas) | 1.6.6.3 puente | `latest.json` (17 oct) | Lleva a las Mac antiguas a Lapislázuli |
 | Página pública de descargas | 1.5.0 base | `gba.software/workspace` (`public/gba/workspace/releases.json`) | Intencionalmente fija; los scripts de publicación exigen que no cambie |
 | Web | 1.7.5 (`e5dbabf`) | `workspace.gba.software` (Vercel `gba-workspace`) | Despliegue automático desde `main` |
-| Pasarela de archivos (Worker `workspace-originals`) | 1.7.5 · versión `b49b83d0` | `workspace-originals.gba-vista.workers.dev` | Antes: 1.7.0 (`937db032`, 17 oct). 1.7.1–1.7.2.1 no cambiaron la pasarela, por eso no se volvió a publicar |
+| Pasarela de archivos (Worker `workspace-originals`) | 1.7.5 · versión `20d761b4` | `workspace-originals.gba-vista.workers.dev` | 11 nov: acepta `workspace.gba.software` (mismo código que `b49b83d0`). Antes: 1.7.0 (`937db032`, 17 oct) |
 | Base de datos (Supabase `wgihpztgwsovhykboyru`) | 1.7.5 + adelanto de 1.8.0 (`workspace_production_kinds`, 11 nov) | — | 1.7.5: puente y corrección aplicados el 10 nov. 1.8.0: tipos de producción aplicados antes de publicar la web; sin efecto visible hasta entonces |
 | Puente con Ultramar | **Encendido** (`upload_policy.ultramar_enabled = true`) | — | Límites: 90 MB `.ultramar`, 90 MB PDF, 20 MB vista previa (4096 px). Apagar: `update workspace_private.upload_policy set ultramar_enabled=false` |
+
+## Corrección del 11 de noviembre: archivos en la web nueva
+
+La pasarela de archivos rechazaba las solicitudes de `workspace.gba.software` (403 por origen), así que en la web nueva no
+se podían subir ni descargar referencias, imágenes ni archivos de Ultramar. Autorizado por Santiago: se agregó ese dominio a
+`ALLOWED_ORIGINS` y se desplegó la versión `20d761b4` (commit `c2fd431`, mismo código que `b49b83d0`). Verificado:
+`workspace.gba.software` y `gba.software` responden 204 en imágenes, referencias y Ultramar; otros orígenes y dominios
+parecidos siguen en 403; sin sesión sigue en 401; los secretos de la pasarela se conservan.
 
 ## Por qué la versión de la pasarela no coincide con la de la app
 
