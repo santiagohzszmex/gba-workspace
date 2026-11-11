@@ -88,7 +88,7 @@ export default function WorkspaceAuth({productName = 'Workspace'}) {
         </fieldset>
       </form>
       {!registering && <button className="wa-text-button" type="button" disabled={busy} onClick={() => changeMode(recovering ? 'login' : 'recover')}>{recovering ? 'Volver al inicio de sesión' : '¿Olvidaste tu PIN?'}</button>}
-      {!recovering && <p className="wa-team-note">{registering ? 'Crear tu GBA ID no activa el acceso a Workspace. Tus ediciones y asignaciones aparecerán cuando tu equipo te dé acceso.' : 'Tus ediciones y asignaciones aparecerán cuando el equipo active tu acceso.'}</p>}
+      {!recovering && <p className="wa-team-note">{registering ? 'Crear tu GBA ID no activa el acceso a Workspace. Tus producciones y asignaciones aparecerán cuando tu equipo te dé acceso.' : 'Tus producciones y asignaciones aparecerán cuando el equipo active tu acceso.'}</p>}
     </section>
     <footer className="wa-footer">GBA ID · Una misma cuenta para tu equipo.</footer>
   </main>;

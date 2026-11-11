@@ -8,6 +8,7 @@ import ImageSpecForm from './images/ImageSpecForm';
 import VideoDelivery from './video/VideoDelivery';
 import VideoKindForm from './video/VideoKindForm';
 import VideoPublications from './video/VideoPublications';
+import { productionNoun } from './productionKinds.mjs';
 import { CommandForm, choices } from './ui';
 import { PRIORITIES, dateLabel } from './gimgModel';
 import WorkConversation from './WorkConversation';
@@ -106,7 +107,7 @@ export function PersonalWork({ project, data, task, actorId, command, api, busy,
       </aside>
       {selected
         ? <div className="gw-deadline-editor"><TaskDates task={withDeadlineFacts(selected,data)}/><UltramarOpen task={selected} data={data} previewMode={previewMode}/>{data.areas.find(a=>a.id===selected.area_id)?.specialty==='social'&&<VideoPublications project={project} data={data} actorId={actorId} api={videoApi} busy={busy}/>}{selected.kind==='video' ? <VideoDelivery key={selected.id} task={selected} data={data} actorId={actorId} api={videoApi} command={command} busy={busy} onDirtyChange={setWorkDirty}/> : selected.kind==='image' ? <ImageDelivery key={selected.id} task={selected} data={data} actorId={actorId} api={imageApi} command={command} busy={busy} onDirtyChange={setWorkDirty} initialNoteId={initialImageNoteId} initialVersionId={initialImageVersionId}/> : <WorkEditor key={selected.id} task={selected} data={data} actorId={actorId} api={api} command={command} previewMode={previewMode} busy={busy} onDirtyChange={setWorkDirty} onReference={onReference} focus={focus} onFocusChange={setFocus} onSplitChange={setSplit} referenceApi={referenceApi} />}</div>
-        : <div className="gw-wk-empty"><FileText size={30} aria-hidden="true" /><h2>No tienes entregas pendientes en esta edición.</h2><p>Puedes crear un documento ahora, escribir en privado y enviarlo a otra persona. Tus asignaciones aparecerán en esta pestaña cuando las recibas.</p><div className="gw-mywork-actions"><button type="button" className="gw-wk-btn gw-wk-btn-primary" disabled={busy || !data.support?.creation_areas?.length} onClick={newDocument}><Plus size={16}/>Nuevo documento</button><button type="button" className="gw-wk-btn" onClick={onReference}>Consultar referencias de la edición</button></div></div>}
+        : <div className="gw-wk-empty"><FileText size={30} aria-hidden="true" /><h2>No tienes entregas pendientes en esta {productionNoun(project)}.</h2><p>Puedes crear un documento ahora, escribir en privado y enviarlo a otra persona. Tus asignaciones aparecerán en esta pestaña cuando las recibas.</p><div className="gw-mywork-actions"><button type="button" className="gw-wk-btn gw-wk-btn-primary" disabled={busy || !data.support?.creation_areas?.length} onClick={newDocument}><Plus size={16}/>Nuevo documento</button><button type="button" className="gw-wk-btn" onClick={onReference}>Consultar referencias de la {productionNoun(project)}</button></div></div>}
     </div>}{pendingNavigation && <DraftExitDialog onStay={() => setPendingNavigation(null)} onDiscard={() => { const navigate=pendingNavigation; setPendingNavigation(null); setWorkDirty(false); setSupportDirty(false); onDirtyChange?.(false); navigate(); }} />}
   </section>;
 }
@@ -131,8 +132,8 @@ export function AreaAssignments({ project, data, task, command, busy, onPick, on
   const canReview = selected && canReviewTask(selected, permissions, area);
   const editable = selected && ['pending', 'assigned', 'in_progress', 'review', 'changes_requested', 'blocked'].includes(selected.state);
   return <section className="gw-wk gw-wk-team">
-    <div className="gw-wk-head"><div><h1>Asignaciones</h1><p>Organiza el trabajo de {areas.length === 1 ? areas[0].name : 'la edición'}: quién lo realiza, qué entrega y cuándo.</p></div><CreateWork project={project} data={data} command={command} busy={busy} onCreated={onPick} /></div>
-    <DeliverySummary tasks={scoped}/>
+    <div className="gw-wk-head"><div><h1>Asignaciones</h1><p>Organiza el trabajo de {areas.length === 1 ? areas[0].name : `la ${productionNoun(project)}`}: quién lo realiza, qué entrega y cuándo.</p></div><CreateWork project={project} data={data} command={command} busy={busy} onCreated={onPick} /></div>
+    <DeliverySummary tasks={scoped} noun={productionNoun(project)}/>
     <div className="gw-wk-toolbar">
       <label className="gw-wk-search"><span className="gw-sr-only">Buscar asignación o persona</span><Search size={16} aria-hidden="true" /><input type="search" placeholder="Buscar trabajo o persona" value={query} onChange={event => setQuery(event.target.value)} /></label>
       <div className="gw-wk-chipset" role="group" aria-label="Filtrar asignaciones">{FILTERS.map(([key, label]) => <button type="button" key={key} aria-pressed={filter === key} onClick={() => setFilter(key)}>{label}{key !== 'all' && <span>{scoped.filter(item => matches(item, key)).length}</span>}</button>)}</div>
@@ -171,7 +172,7 @@ export function AreaAssignments({ project, data, task, command, busy, onPick, on
             </section>
             <VideoKindForm key={`video-kind-${selected.id}-${selected.revision}`} task={selected} project={project} video={data.video} api={videoApi} busy={busy} editable={Boolean(editable)&&Boolean(permissions?.['task.assign'])}/>
             {data.areas.find(a=>a.id===selected.area_id)?.specialty==='social'&&<VideoPublications project={project} data={data} api={videoApi} busy={busy}/>}
-            {data.images?.enabled&&selected.kind!=='video'&&<ImageSpecForm key={`spec-${selected.id}-${selected.revision}`} task={selected} spec={data.images.specs?.[selected.id]} api={imageApi} busy={busy} editable={Boolean(editable)&&(data.images.uploads_enabled??data.images.policy?.images_enabled)}/>}
+            {data.images?.enabled&&selected.kind!=='video'&&<ImageSpecForm noun={productionNoun(project)} key={`spec-${selected.id}-${selected.revision}`} task={selected} spec={data.images.specs?.[selected.id]} api={imageApi} busy={busy} editable={Boolean(editable)&&(data.images.uploads_enabled??data.images.policy?.images_enabled)}/>}
             {ultramarApi&&<UltramarPrepare key={`ultramar-${selected.id}-${selected.revision}`} task={selected} data={data} api={ultramarApi} busy={busy} editable={Boolean(editable)}/>}
             <TaskMaterials task={selected} data={data} editable={Boolean(editable)} referenceApi={referenceApi} onOpen={row=>setReferenceTarget(row.reference_id)}/><WorkConversation task={selected} data={data} command={command} busy={busy} />
           </div>
@@ -188,9 +189,9 @@ export function AreaAssignments({ project, data, task, command, busy, onPick, on
 
 export function EditionCalendar({ actorId, project, data, permissions, command, busy, onPick }) {
   const events = data.events.filter(event => event.project_id === project.id).sort((a, b) => new Date(a.starts_at) - new Date(b.starts_at));
-  return <section className="gw-work-section"><h2>Calendario de la edición</h2><p>Entregas, revisiones y fechas editoriales de {project.title}.</p>
+  return <section className="gw-work-section"><h2>Calendario de la {productionNoun(project)}</h2><p>Entregas, revisiones y fechas editoriales de {project.title}.</p>
     {permissions['task.update_schedule'] && <details className="gw-disclosure"><summary>Añadir fecha</summary><CommandForm busy={busy} button="Añadir hito" fields={{ title: 'Título', kind: { label: 'Tipo', options: { milestone: 'Hito', review: 'Revisión', editorial: 'Fecha editorial' } }, starts_at: { label: 'Inicio', type: 'datetime-local' }, ends_at: { label: 'Fin', type: 'datetime-local', optional: true } }} onSave={values => command('event.save', values)} /></details>}
-    {!events.length && <p className="gw-empty">Todavía no hay fechas registradas para esta edición.</p>}
+    {!events.length && <p className="gw-empty">Todavía no hay fechas registradas para esta {productionNoun(project)}.</p>}
     <div className="gw-list">{events.map(event => <article key={event.id}><h3>{event.title}</h3><p>{dateLabel(event.starts_at)}{event.ends_at && ` → ${dateLabel(event.ends_at)}`} · {{ milestone: 'Hito', review: 'Revisión', editorial: 'Fecha editorial', deadline: 'Entrega' }[event.kind] || event.kind}</p>{event.kind==='deadline'&&data.tasks.find(t=>t.id===event.deliverable_id)&&<TaskDates task={withDeadlineFacts(data.tasks.find(t=>t.id===event.deliverable_id),data)}/>}<span className="gw-sr-only">Las fechas límite usan Ciudad de México.</span>{event.deliverable_id && data.tasks.some(task => task.id === event.deliverable_id && (taskIsMine(task, actorId) || data.taskPermissions?.[task.id]?.['task.assign'] || hasReviewPermission(data.taskPermissions?.[task.id] || {}) || data.approvedDocuments?.some(document => document.deliverable_id === task.id))) && <button type="button" onClick={() => onPick(data.tasks.find(task => task.id === event.deliverable_id))}>Abrir trabajo</button>}{permissions['task.update_schedule'] && event.kind !== 'deadline' && <details className="gw-disclosure"><summary>Modificar fecha</summary><CommandForm key={`${event.id}-${event.revision}`} initial={event} busy={busy} fields={{ title: 'Título', starts_at: { label: 'Inicio', type: 'datetime-local' }, ends_at: { label: 'Fin', type: 'datetime-local', optional: true } }} button="Guardar fecha" onSave={values => command('event.save', { ...values, id: event.id, kind: event.kind }, event.revision)} /></details>}</article>)}</div>
   </section>;
 }

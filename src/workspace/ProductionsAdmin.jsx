@@ -48,7 +48,7 @@ function ProductionRow({ project, permissions, command, busy, onRemove, editing,
   return <li className="gw-production-row" data-editing={editing || undefined}>
     <div className="gw-production-summary">
       <div><strong>{project.title}</strong><div className="gw-production-meta"><KindLabel project={project} /><span className="gw-production-status" data-status={project.status}>{STATUS[project.status] || project.status}</span><span>{period(project)}</span></div></div>
-      {(canEdit || canRemove) && (editing ? <button type="button" className="gw-production-icon" aria-label={`Cerrar edición de ${project.title}`} disabled={busy} onClick={onClose}><X size={17} aria-hidden="true" /></button>
+      {(canEdit || canRemove) && (editing ? <button type="button" className="gw-production-icon" aria-label={`Cerrar cambios de ${project.title}`} disabled={busy} onClick={onClose}><X size={17} aria-hidden="true" /></button>
         : <button type="button" disabled={busy} onClick={onEdit}><Pencil size={14} aria-hidden="true" />Editar</button>)}
     </div>
     {editing && <div className="gw-production-edit">

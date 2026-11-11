@@ -50,4 +50,14 @@ try{
 // Configuración usa la nueva pestaña y ya no tiene su propio selector de edición para administrar.
 const settings=await fs.readFile('src/workspace/WorkspaceSettings.jsx','utf8');
 assert.match(settings,/Administrar producciones/);assert.match(settings,/<ProductionsAdmin /);assert.doesNotMatch(settings,/Edición para administrar/);
+
+// Textos: dentro de una producción se usa su nombre («edición» o «producción»); los generales dicen «producción».
+// Sólo quedan «edición» con otro sentido (áreas, editar, microedición) o el valor por omisión del sustantivo.
+{
+ const allowed=[/Edición de video/,/Edición y montaje/,/microedición/,/Cerrar edición de referencia/,/ediciones y textos/,/noun='edición'/,/^\s*\/\//,/'edición';$/];
+ const files=['src/views/Workspace.jsx',...(await fs.readdir('src/workspace',{recursive:true})).filter(f=>/\.(jsx?|mjs)$/.test(f)&&!/[Dd]emo|workspaceData/.test(f)).map(f=>`src/workspace/${f}`)];
+ const left=[];
+ for(const file of files)(await fs.readFile(file,'utf8')).split('\n').forEach((line,i)=>{if(/[Ee]dici(ón|ones)/.test(line)&&!allowed.some(re=>re.test(line)))left.push(`${file}:${i+1}`);});
+ assert.deepEqual(left,[],'textos con «edición» fuera de contexto');
+}
 console.log('PASS: production kinds in the interface: labels, video tag, production admin list, grouping and creation by type.');

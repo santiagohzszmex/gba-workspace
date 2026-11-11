@@ -5,7 +5,7 @@ const groups = [
       ['creative_direction', 'Dirección creativa'],
       ['moodboard', 'Moodboard'],
       ['common_palette', 'Paleta común'],
-      ['edition_guide', 'Guía de la edición'],
+      ['edition_guide', 'Guía general'],
     ],
   },
   {

@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { AlertCircle, ArrowRight, CheckCircle2, Hourglass, Lock, Maximize2, Minimize2, PanelLeftOpen } from 'lucide-react';
 const RichDocument = React.lazy(() => import('./RichDocument'));
+import { productionNoun } from './productionKinds.mjs';
 import { DocumentContent } from './EditionDocuments';
 import StructuredDocument from './StructuredDocument';
 import ReferenceSplit from './ReferenceSplit';
@@ -145,7 +146,7 @@ export default function WorkEditor({ task, data, actorId, api, command, onDirtyC
           : <article className="gw-wk-page">{version?.content_document ? <StructuredDocument document={version.content_document} /> : version?.content_markdown ? <DocumentContent content={version.content_markdown} /> : <p className="gw-wk-page-empty">Todavía no hay una versión enviada de este trabajo.</p>}</article>}
       </div>
       <aside className="gw-wk-context" aria-label="Contexto del trabajo">
-        <section><h3>Tu asignación</h3>{task.description_document ? <StructuredDocument document={task.description_document}/> : <p className="gw-wk-prose">{task.description || (task.created_by === actorId ? 'Documento creado por ti para esta edición.' : 'El responsable del área todavía no ha añadido indicaciones.')}</p>}</section><TaskMaterials task={task} data={data} onOpen={row => {setReferenceTarget(row.reference_id);setReferenceOpen(true);}} referenceApi={referenceApi} />
+        <section><h3>Tu asignación</h3>{task.description_document ? <StructuredDocument document={task.description_document}/> : <p className="gw-wk-prose">{task.description || (task.created_by === actorId ? `Documento creado por ti para esta ${productionNoun(data.projects?.find(p => p.id === task.project_id))}.` : 'El responsable del área todavía no ha añadido indicaciones.')}</p>}</section><TaskMaterials task={task} data={data} onOpen={row => {setReferenceTarget(row.reference_id);setReferenceOpen(true);}} referenceApi={referenceApi} />
         <section><h3>Siguiente paso</h3><p className="gw-wk-next"><ArrowRight size={15} aria-hidden="true" /><span>{nextStep(task, true)}</span></p></section>
         <button type="button" className="gw-wk-btn gw-wk-btn-block" onClick={() => setReferenceOpen(true)}><PanelLeftOpen size={16} aria-hidden="true" />Abrir referencia al lado</button>
         {editable && payload && <details className="gw-wk-fold"><summary><span>Créditos y archivo de apoyo</span></summary><label>Créditos<textarea value={payload.credits} disabled={working || busy} onChange={event => change({ credits: event.target.value })} /></label><label>Enlace a tu archivo<input type="url" placeholder="https://…" disabled={working || busy} value={payload.asset_url} onChange={event => change({ asset_url: event.target.value })} /></label><p>Si tu trabajo está en un repositorio externo, añade aquí su enlace.</p></details>}
