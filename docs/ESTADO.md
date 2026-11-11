@@ -55,6 +55,17 @@ Edición «Prueba 1.7.5 · Ultramar» (`828e4938…`), asignación «Maquetació
 Preparada para Ultramar → enviada desde Ultramar con la sesión de Santiago → versión 1 en Revisión con `.ultramar`, PDF y PNG
 verificados por la pasarela; una sola reserva. La edición de prueba puede cerrarse o eliminarse cuando ya no se necesite.
 
+## Inicio de sesión en workspace.gba.software (10 de noviembre de 2026)
+
+La web en su dominio propio mostraba «Failed to fetch» al entrar: GBA ID (`gba.software/api/gba-id`, repositorio `VISTA`,
+proyecto de Vercel `gba-vista-seeitdifferently`) no tenía `https://workspace.gba.software` entre sus orígenes y respondía 403.
+Corregido en `VISTA` `47c6e04` (pruebas: el dominio entra y los parecidos siguen rechazados) y publicado con autorización de
+Santiago. Comprobado: `workspace.gba.software` recibe permiso; `gba.software` y `vista.gba.software` siguen igual. Ese proyecto
+no se publica solo al subir a `main`: hay que desplegarlo.
+
 ## Pendiente
+
+- Avisos del navegador en `workspace.gba.software`: la web pide `/api/workspace-push` en su propio dominio, donde no existe
+  (404); el servicio vive en `gba.software/api/workspace-push`.
 
 - Windows: Lapislázuli (1.7.x) y Ultramar en Windows.
