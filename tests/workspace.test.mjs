@@ -2,6 +2,7 @@ import {runDeviceNotificationAcceptance} from './workspace-device-notifications.
 import {runUltramarAcceptance} from './workspace-ultramar.test.mjs';
 import {runProductionKindsAcceptance,applyProductionKinds} from './workspace-production-kinds.test.mjs';
 import {runVideoReviewsAcceptance,applyVideoReviews} from './workspace-video-reviews.test.mjs';
+import {runConversationImagesAcceptance,applyConversationImages} from './workspace-conversation-images.test.mjs';
 import {runVisualFunctionsAcceptance} from './workspace-visual-functions.test.mjs';
 import {runClosedEditionAcceptance} from './workspace-closed-editions.test.mjs';
 import {runDeadlineAcceptance} from './workspace-deadlines.test.mjs';
@@ -379,6 +380,8 @@ await applyProductionKinds(db);
 checks += await runProductionKindsAcceptance(db);
 await applyVideoReviews(db);
 checks += await runVideoReviewsAcceptance(db);
+await applyConversationImages(db);
+checks += await runConversationImagesAcceptance(db);
 const authUi=await runWorkspaceAuthAcceptance();
 if(process.env.WORKSPACE_SCHEMA_PROOF){await db.exec('reset role');fs.writeFileSync(process.env.WORKSPACE_SCHEMA_PROOF,JSON.stringify({sourceCommit:process.env.GITHUB_SHA,assertions:checks,authUi,evidence:(await db.query(CUARZO_SCHEMA_QUERY)).rows[0].evidence}));}
 console.log(`PASS: ${checks} Workspace assertions: direct API denial, scopes, full editorial cycle, suspension, delegation expiry, immutable versions, self approval, licenses, recovery and session revocation.`);

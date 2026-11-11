@@ -26,6 +26,7 @@ import '../workspace/images/images.css';
 import {imageStorageApi} from '../workspace/images/imageApi';
 import {videoStorageApi} from '../workspace/video/videoApi';
 import {productionNoun} from '../workspace/productionKinds.mjs';
+import {chatMessages,sameMessages} from '../workspace/chatModel.mjs';
 import {clearImageCache} from '../workspace/images/originalCache.mjs';
 
 const EMPTY = { projects: [], areas: [], tasks: [], members: [], events: [], audit: [], versions: [], comments: [], assignments: [], grants: [], delegations: [], approvedDocuments: [], references: [], referenceStorage: {}, areaPermissions: {}, taskPermissions: {} };
@@ -204,14 +205,15 @@ export default function Workspace({ previewMode = false }) {
         const out = runWorkflowDemo(demoState.current, actor, action, { unit_id: unitId, project_id: projectId, ...payload }, revision);
         demoState.current = out.state; setData(viewDemo(out.state, actor, projectId));
         if(action==='project.save'){const group=isClosedEdition(out.result)?'closed':'editions';setScreen(group);}
-        setNotice(savedMessage(action,payload)+' Demostración local.');
+        if(action!=='comment.add')setNotice(savedMessage(action,payload)+' Demostración local.');
         return out.result;
       }
       const result = await rpc('workspace_command', { p_action: action, p_data: { unit_id: unitId, project_id: projectId, ...payload }, p_revision: revision });
       const nextScreen=action==='project.save'?(isClosedEdition(result)?'closed':'editions'):screen;
       if(action==='project.save')setScreen(nextScreen);
       await load(true,nextScreen);
-      setNotice(savedMessage(action,payload));
+      // Un mensaje del chat ya se ve en la conversación; no hace falta un aviso por cada uno.
+      if(action!=='comment.add')setNotice(savedMessage(action,payload));
       return result;
     } catch (error) { setNotice(error.message); return null; }
     finally { setBusy(false); }
@@ -400,13 +402,20 @@ export default function Workspace({ previewMode = false }) {
       const rows=scope.supportId ? await rpc('workspace_support_mention_candidates',{p_id:scope.supportId}) : await rpc('workspace_mention_candidates',{p_project_id:scope.projectId || projectId,p_deliverable_id:scope.taskId || null,p_reference_id:scope.referenceId || null,p_area_id:scope.areaId || null,p_kind:scope.kind || 'reference'});
       candidateCache.current.set(key,{time:Date.now(),rows});return rows;
     },
+    // Conversación: trae los mensajes de una asignación sin recargar toda la producción.
+    syncComments:async taskId=>{
+      if(previewMode||!taskId)return;
+      const {data:rows,error}=await supabase.from('workspace_comments').select('*').eq('deliverable_id',taskId).order('created_at',{ascending:false});
+      if(error)throw error;
+      setData(current=>{const before=current.comments.filter(item=>item.deliverable_id===taskId);if(sameMessages(chatMessages(before,taskId),chatMessages(rows,taskId)))return current;return {...current,comments:[...current.comments.filter(item=>item.deliverable_id!==taskId),...rows]};});
+    },
     uploadImage:async(scope,file)=>{
       if(previewMode)throw Error('La demostración local conserva el flujo sin subir archivos reales.');
       if(busy || loading)throw Error('Espera a que termine la operación actual.');
       if(!originalMime(file).startsWith('image/'))throw Error('Elige una imagen original. Los PDF se añaden como material de referencia.');
       setBusy(true);
       try {
-        const reference = scope.supportId ? await rpc('workspace_prepare_support_original',{p_id:scope.supportId,p_title:file.name.slice(0,180)}) : scope.taskId ? await rpc('workspace_prepare_task_reference',{p_deliverable_id:scope.taskId,p_title:file.name.slice(0,180),p_purpose:scope.kind==='assignment'?'assignment':'document_image'}) : data.references.find(row=>row.id===scope.referenceId);
+        const reference = scope.supportId ? await rpc('workspace_prepare_support_original',{p_id:scope.supportId,p_title:file.name.slice(0,180)}) : scope.taskId ? await rpc('workspace_prepare_task_reference',{p_deliverable_id:scope.taskId,p_title:file.name.slice(0,180),p_purpose:scope.kind==='assignment'?'assignment':scope.attachments?'conversation':'document_image'}) : data.references.find(row=>row.id===scope.referenceId);
         if(!reference)throw Error('Guarda esta referencia y vuelve a editarla para insertar imágenes.');
         const uploaded=await uploadReferenceOriginal(data.referenceStorage.gateway_url,reference,file);
         const asset=await rpc('workspace_original_descriptor',{p_id:uploaded.id});

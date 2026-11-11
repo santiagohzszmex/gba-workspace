@@ -152,8 +152,8 @@ export default function WorkEditor({ task, data, actorId, api, command, onDirtyC
         {editable && payload && <details className="gw-wk-fold"><summary><span>Créditos y archivo de apoyo</span></summary><label>Créditos<textarea value={payload.credits} disabled={working || busy} onChange={event => change({ credits: event.target.value })} /></label><label>Enlace a tu archivo<input type="url" placeholder="https://…" disabled={working || busy} value={payload.asset_url} onChange={event => change({ asset_url: event.target.value })} /></label><p>Si tu trabajo está en un repositorio externo, añade aquí su enlace.</p></details>}
         <WorkOperations task={task} permissions={permissions} command={command} busy={working || busy || dirty} />
         {dirty && <small className="gw-wk-hint">Guarda tu borrador antes de cambiar el estado del trabajo.</small>}
+        <WorkConversation task={task} data={data} command={command} busy={working || busy} />
       </aside>
     </div>
-    <WorkConversation task={task} data={data} command={command} busy={working || busy} />
   </section></ReferenceSplit>;
 }

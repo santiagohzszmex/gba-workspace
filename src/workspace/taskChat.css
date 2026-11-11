@@ -1,0 +1,40 @@
+/* Workspace 1.8.0 Labradorita · Conversación de la asignación (tipo chat). */
+.gw-chat{display:grid;gap:8px;min-width:0;padding:14px;border:1px solid #e3e1e8;border-radius:12px;background:#fff;font-size:13px}
+.gw-chat-head{display:flex;align-items:center;gap:7px;color:#3d3947}
+.gw-editions .gw-chat-head h3,.gw-chat-head h3{margin:0;font-size:13px;letter-spacing:0;text-transform:none;color:#2f2b36}
+.gw-chat-head span{padding:0 7px;border-radius:9px;background:#eee7f3;color:#685076;font-size:11px;font-weight:700}
+.gw-editions .gw-chat .gw-chat-note{margin:0;font-size:11.5px;line-height:1.45;color:#8a8595}
+.gw-chat-list{list-style:none;margin:0;padding:4px 2px;display:flex;flex-direction:column;gap:10px;max-height:min(420px,52vh);overflow-y:auto;overscroll-behavior:contain}
+.gw-chat-empty{padding:16px 8px;text-align:center;color:#8a8595;font-size:12.5px;line-height:1.5}
+.gw-chat-message{display:grid;gap:3px;justify-items:start;max-width:100%}
+.gw-chat-message[data-own]{justify-items:end}
+.gw-chat-meta{display:flex;align-items:baseline;gap:6px;font-size:11px;color:#8a8595}
+.gw-chat-meta strong{font-size:11.5px;color:#4f4a5a}
+.gw-chat-bubble{max-width:92%;padding:8px 11px;border-radius:12px 12px 12px 4px;background:#f3f1f6;color:#2f2b36;line-height:1.45;overflow-wrap:anywhere}
+.gw-chat-message[data-own] .gw-chat-bubble{border-radius:12px 12px 4px 12px;background:#ece4f3}
+.gw-chat-bubble p{margin:0 0 4px;white-space:pre-wrap}.gw-chat-bubble p:last-child{margin-bottom:0}
+.gw-chat-bubble img{max-width:100%;height:auto;border-radius:8px}
+.gw-chat-bubble .gw-document-content,.gw-chat-bubble .gw-structured-document{font-size:13px}
+.gw-chat-kind{display:block;margin-bottom:4px;font-size:10.5px;font-weight:700;letter-spacing:.04em;text-transform:uppercase}
+.gw-chat-message[data-kind=changes] .gw-chat-bubble{background:#fff4e0;border:1px solid #f0d9a8}
+.gw-chat-message[data-kind=changes] .gw-chat-kind{color:#8a5a00}
+.gw-chat-message[data-kind=verified] .gw-chat-bubble{background:#e8f3ea;border:1px solid #c7e1cc}
+.gw-chat-message[data-kind=verified] .gw-chat-kind{color:#2b6b3a}
+.gw-chat-message[data-kind=qa_issue] .gw-chat-bubble{background:#fdecec;border:1px solid #f1c6c4}
+.gw-chat-message[data-kind=qa_issue] .gw-chat-kind{color:#9b3a30}
+.gw-chat-composer{display:grid;gap:6px;padding-top:8px;border-top:1px solid #efedf2}
+.gw-chat-composer .gw-writing-editor{border-radius:10px}
+/* El desplazamiento va en el propio texto: si lo tuviera el contenedor, la lista de menciones no cabría y se cerraría. */
+.gw-chat-composer .gw-writing-paper{min-height:44px}
+.gw .gw-chat-composer .gw-opal-compact .gw-writing-paper .tiptap{max-height:180px;overflow-y:auto}
+.gw-chat-actions{display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap}
+.gw-chat-actions small{font-size:11px;color:#8a8595}
+.gw .gw-chat-actions button{display:inline-flex;align-items:center;gap:6px}
+.gw-chat-issue{font-size:12.5px}
+/* Barra corta en el chat: negrita, cursiva, subrayado, enlace, más formato e imágenes. */
+.gw-chat-composer .gw-format-toolbar>label,
+.gw-chat-composer .gw-format-toolbar>button:is([aria-label="Resaltar"],[aria-label="Tabla"],[aria-label="Buscar y reemplazar"],[aria-label="Deshacer"],[aria-label="Rehacer"]){display:none}
+.gw .gw-chat-composer .gw-opal-compact .gw-format-toolbar{min-height:0;padding:3px 4px;gap:2px}
+.gw .gw-chat-composer .gw-opal-compact .gw-writing-paper .tiptap{min-height:44px;padding:9px 12px;font-size:13.5px;line-height:1.5}
+.gw-chat .gw-writing-paper[data-empty=true]::before{content:attr(data-placeholder);left:12px;top:9px;font-size:13.5px;line-height:1.5}
+.gw-editions .gw-chat .gw-chat-head h3{margin:0;font-size:13px;letter-spacing:0;text-transform:none;color:#2f2b36}

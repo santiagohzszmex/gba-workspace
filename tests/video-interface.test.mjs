@@ -93,7 +93,7 @@ try{
 // Conexión con las pantallas existentes.
 const source=async f=>fs.readFile(f,'utf8');
 const [work,reviews,closedView,view,css,tauri]=await Promise.all(['src/workspace/EditionWork.jsx','src/workspace/EditionReviews.jsx','src/workspace/ClosedEdition.jsx','src/views/Workspace.jsx','src/workspace/video/video.css','src-tauri/tauri.conf.json'].map(source));
-ok(/selected\.kind==='video' \? <VideoDelivery/.test(work)&&/<VideoKindForm/.test(work)&&/<VideoPublications/.test(work));
+ok(/selected\.kind==='video' \? (<>)?<VideoDelivery/.test(work)&&/<VideoKindForm/.test(work)&&/<VideoPublications/.test(work));
 ok(/selected\.kind==='video'&&<VideoReview/.test(reviews)&&/hidden=\{\['image','video'\]\.includes\(selected\.kind\)\}/.test(reviews));
 ok(/task\.kind==='video'\?<VideoReview[^>]*readOnly/.test(closedView));
 ok(/id && videoProject \? rpc\('workspace_video_bundle'/.test(view)&&/rpc\('workspace_video_command'/.test(view));
