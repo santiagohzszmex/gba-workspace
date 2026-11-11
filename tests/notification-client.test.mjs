@@ -28,4 +28,8 @@ assert.deepEqual(routes[pushRoute],{src:'^/api/workspace-push$',methods:['GET'],
 assert.ok(pushRoute<routes.findIndex(r=>r.handle==='filesystem'));
 assert.equal(routes.filter(r=>String(r.dest||'').startsWith('http')).length,1,'ninguna otra ruta sale del dominio');
 assert.match(await fs.readFile('src/workspace/devicePush.mjs','utf8'),/fetch\('\/api\/workspace-push',\{cache:'no-store'\}\)/);
-console.log('PASS: notification acknowledgment races, preserved new arrivals, disposal, safe service-worker delivery and push configuration route.');
+// La pasarela de archivos acepta la web nueva (workspace.gba.software) con origen exacto, sin comodines.
+const gatewayOrigins=(await fs.readFile('cloudflare/workspace-originals/wrangler.jsonc','utf8')).match(/"ALLOWED_ORIGINS":\s*"([^"]+)"/)[1].split(',');
+for(const origin of ['https://workspace.gba.software','https://gba.software','https://www.gba.software','https://vista.gba.software'])assert.ok(gatewayOrigins.includes(origin),origin);
+assert.ok(!gatewayOrigins.some(origin=>origin.includes('*')));
+console.log('PASS: notification acknowledgment races, preserved new arrivals, disposal, safe service-worker delivery, push configuration route and gateway origin for the web domain.');
