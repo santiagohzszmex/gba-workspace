@@ -82,6 +82,16 @@
   .gw-chat-actions > small { flex-basis: 100%; }
 
   .gw-editions .gw-review-layout { grid-template-columns: minmax(0, 1fr); }
+  .gw-editions .gw-review-layout > .gw-list {
+    min-width: 0;
+    overscroll-behavior-inline: contain;
+    padding-bottom: 4px;
+  }
+  .gw-editions .gw-review-layout > .gw-list > button {
+    flex: 0 0 min(78%, 240px);
+    min-width: 0;
+    overflow-wrap: anywhere;
+  }
   .gw-editions .gw-review-document { min-width: 0; }
   .gw-editions .gw-reviewed-paper { padding: 20px 14px; overflow-wrap: anywhere; }
   .gw-editions .gw-video-delivery { padding: 14px; }
