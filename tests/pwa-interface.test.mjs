@@ -10,14 +10,18 @@ const vite = await readFile('vite.web.config.js', 'utf8');
 const manifest = JSON.parse(await staticFile('manifest.webmanifest'));
 assert.ok(vite.includes(`base: '${base}'`));
 assert.ok(html.includes('rel="manifest" href="/manifest.webmanifest"'));
-assert.ok(html.includes('rel="apple-touch-icon" href="/apple-touch-icon-labradorita.png" sizes="180x180"'));
+const iosIcons = [120, 152, 167, 180].map(size => ({
+  src: size === 180 ? 'apple-touch-icon-labradorita.png' : `apple-touch-icon-${size}x${size}.png`,
+  sizes: `${size}x${size}`
+}));
+for (const icon of iosIcons) assert.ok(html.includes(`rel="apple-touch-icon" href="/${icon.src}" sizes="${icon.sizes}"`));
 assert.match(vite, /publicDir: path\.resolve\('public\/workspace\/web'\)/);
 assert.match(html, /viewport-fit=cover/);
 assert.deepEqual([manifest.id, manifest.scope, manifest.start_url, manifest.display, manifest.lang],
   [base, base, base, 'standalone', 'es']);
 assert.deepEqual(manifest.icons.map(({ sizes, purpose }) => [sizes, purpose]),
   [['192x192', 'any'], ['512x512', 'any'], ['512x512', 'maskable']]);
-for (const { src, sizes } of [...manifest.icons, { src: base + 'apple-touch-icon-labradorita.png', sizes: '180x180' }]) {
+for (const { src, sizes } of [...manifest.icons, ...iosIcons.map(icon => ({ ...icon, src: base + icon.src }))]) {
   assert.ok(src.startsWith(base));
   const png = await staticFile(src.slice(base.length));
   assert.equal(png.subarray(1, 4).toString(), 'PNG');

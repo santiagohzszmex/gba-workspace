@@ -7,8 +7,18 @@ await fs.mkdir(web, { recursive: true });
 await fs.cp('public/workspace', 'dist/workspace', { recursive: true });
 await fs.copyFile('public/gba/workspace/workspace-icon.png', web + '/workspace-icon.png');
 
-// Conserva la URL anterior para las páginas que Safari ya tenía abiertas.
-await fs.copyFile(web + '/apple-touch-icon-labradorita.png', web + '/icon-180.png');
+// Safari también busca nombres convencionales en la raíz del dominio de Workspace.
+const iosIcon = web + '/apple-touch-icon-labradorita.png';
+await Promise.all([
+  fs.copyFile(iosIcon, web + '/icon-180.png'),
+  fs.copyFile(iosIcon, web + '/apple-touch-icon.png'),
+  ...['apple-touch-icon.png', 'apple-touch-icon-precomposed.png', 'apple-touch-icon-180x180.png'].map(name =>
+    fs.copyFile(iosIcon, 'dist/' + name)),
+  ...[120, 152, 167].map(size => {
+    const name = `apple-touch-icon-${size}x${size}.png`;
+    return fs.copyFile(web + '/' + name, 'dist/' + name);
+  })
+]);
 const worker = 'dist/workspace/notification-worker.js';
 const source = await fs.readFile(worker, 'utf8');
 // Sólo se admiten archivos de Vite que llevan una huella de su contenido en el nombre.

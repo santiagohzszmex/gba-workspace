@@ -51,6 +51,7 @@ await Promise.all([
   render(regular, 512, 'icon-512.png'),
   render(regular, 192, 'icon-192.png'),
   render(regular, 180, 'apple-touch-icon-labradorita.png'),
+  ...[120, 152, 167].map(size => render(regular, size, `apple-touch-icon-${size}x${size}.png`)),
   render(maskable, 512, 'icon-maskable-512.png')
 ]);
-console.log(`Íconos de celular generados en ${out}/icon-*.png`);
+console.log(`Íconos de celular generados en ${out}`);
