@@ -8,6 +8,15 @@ export default function WorkspaceInstall() {
   const [error, setError] = useState(false);
   if (!mode && !error) return null;
 
+  const legacyHost = ['gba.software', 'www.gba.software'].includes(globalThis.location?.hostname);
+  if (mode === 'ios' && legacyHost) {
+    return <div className="gw-install">
+      <a className="gw-install-link" href="https://workspace.gba.software/workspace/web/?instalar=ios">
+        <Download size={16} aria-hidden="true" /> Instalar app
+      </a>
+    </div>;
+  }
+
   function install() {
     if (mode === 'ios') setInstructions(value => !value);
     else void promptWorkspaceInstall().catch(() => setError(true));
