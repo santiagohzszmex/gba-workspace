@@ -69,7 +69,7 @@ export function VideoControls({ videos, durationMs, timeMs, playing, markers = [
   const toggle = () => { if (playing) each(element => element.pause()); else each(element => { void element.play().catch(() => {}); }); };
   return <div className="gw-video-controls" onKeyDown={event => {
     if (event.target.tagName === 'INPUT' && event.target.type !== 'range') return;
-    if (event.key === ' ') { event.preventDefault(); toggle(); }
+    if (event.key === ' ' && event.target.tagName !== 'BUTTON') { event.preventDefault(); toggle(); }
     if (event.key === 'ArrowLeft' || event.key === ',') { event.preventDefault(); seek(timeMs - FRAME_MS); }
     if (event.key === 'ArrowRight' || event.key === '.') { event.preventDefault(); seek(timeMs + FRAME_MS); }
   }}>
@@ -81,8 +81,12 @@ export function VideoControls({ videos, durationMs, timeMs, playing, markers = [
     </div>
     <div className="gw-video-timeline">
       <input type="range" min="0" max={Math.max(1, Math.round(durationMs || 0))} step="1" value={Math.round(Math.min(timeMs, durationMs || 0))} aria-label="Posición del video" aria-valuetext={formatTime(timeMs, { precise: true })} onChange={event => seek(Number(event.target.value))} />
-      {durationMs > 0 && markers.map(marker => <button key={marker.id} type="button" className="gw-video-marker" data-selected={marker.id === selectedId || undefined} data-resolved={marker.resolved || undefined}
-        style={{ left: `${Math.min(100, (marker.time_ms / durationMs) * 100)}%` }} aria-label={`Comentario en ${formatTime(marker.time_ms)}`} title={formatTime(marker.time_ms)} onClick={() => onMarker?.(marker)} />)}
+      {durationMs > 0 && markers.length > 0 && <div className="gw-video-timeline-markers">
+        {markers.map(marker => <button key={marker.id} type="button" className="gw-video-marker" data-selected={marker.id === selectedId || undefined} data-resolved={marker.resolved || undefined}
+          style={{ left: `${Math.min(100, (marker.time_ms / durationMs) * 100)}%` }} aria-label={`Comentario en ${formatTime(marker.time_ms)}`} title={formatTime(marker.time_ms)} onClick={() => onMarker?.(marker)}>
+          <span className="gw-video-marker-time" aria-hidden="true">{formatTime(marker.time_ms)}</span>
+        </button>)}
+      </div>}
     </div>
   </div>;
 }

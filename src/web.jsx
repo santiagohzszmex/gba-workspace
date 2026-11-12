@@ -6,6 +6,7 @@ import Workspace from './views/Workspace';
 import { startWorkspacePwa } from './workspace/pwa.mjs';
 import './index.css';
 import './workspace/workspace.css';
+import './workspace/workspaceMobile.css';
 
 // Workspace web (gba.software/workspace/web). Exige sesión de GBA ID y membresía en el servidor;
 // a diferencia del escritorio, no pide licencia ni incluye el actualizador nativo.

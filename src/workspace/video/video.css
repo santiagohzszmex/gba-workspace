@@ -42,6 +42,8 @@
 .gw-video-time small{font-weight:400;color:#8a8595}
 .gw-video-timeline{position:relative;height:22px}
 .gw-video-timeline input[type=range]{position:absolute;inset:0;width:100%;margin:0;accent-color:#716681}
+.gw-video-timeline-markers{display:contents}
+.gw-video-marker-time{display:none}
 .gw .gw-video-marker{position:absolute;top:1px;width:10px;height:10px;min-height:0;padding:0;margin-left:-5px;border:2px solid #fff;border-radius:50%;background:#e5484d;box-shadow:0 0 0 1px rgba(0,0,0,.15);z-index:1}
 .gw .gw-video-marker[data-resolved]{background:#9a95a3}
 .gw .gw-video-marker[data-selected]{transform:scale(1.35);background:#685076}
