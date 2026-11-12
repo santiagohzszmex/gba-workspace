@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import ProductionsAdmin from './ProductionsAdmin';
 import LicensePanel from './LicensePanel';
 import TeamPanel from './TeamPanel';
+import WorkspaceInstall from './WorkspaceInstall';
 import ConnectorSessions from './ConnectorSessions';
 import { Activity, rpc } from './ui';
 
@@ -32,7 +33,7 @@ export default function WorkspaceSettings({ context, data, permissions, command,
       <nav className="gw-settings-nav" aria-label="Configuración de Workspace">{Object.entries(sections).map(([id, label]) => <button type="button" key={id} aria-current={currentSection === id ? 'page' : undefined} onClick={() => setSection(id)}>{label}</button>)}</nav>
       <div className="gw-settings-content">
         {loading ? <p role="status">Cargando configuración…</p> : <>
-        {currentSection === 'general' && <><h2>Espacio de trabajo</h2><label>Unidad activa<select value={unitId} disabled={busy || !context?.units?.length} onChange={event => onUnitChange(event.target.value)}>{context?.units?.map(unit => <option key={unit.id} value={unit.id}>{unit.name}</option>)}</select></label><p>Cada producción conserva sus propios documentos, entregables y calendario.</p><p>Los controles disponibles dependen de tu asignación en GIMG. La administración de GBA y los permisos editoriales se gestionan por separado.</p></>}
+        {currentSection === 'general' && <><h2>Espacio de trabajo</h2><WorkspaceInstall /><label>Unidad activa<select value={unitId} disabled={busy || !context?.units?.length} onChange={event => onUnitChange(event.target.value)}>{context?.units?.map(unit => <option key={unit.id} value={unit.id}>{unit.name}</option>)}</select></label><p>Cada producción conserva sus propios documentos, entregables y calendario.</p><p>Los controles disponibles dependen de tu asignación en GIMG. La administración de GBA y los permisos editoriales se gestionan por separado.</p></>}
         {currentSection==='team' && !permissions['directory.unit_wide'] && data.projects.length > 0 && <label className="gw-settings-project">Producción del directorio<select value={projectId} disabled={busy} onChange={event => onProjectChange(event.target.value)}>{data.projects.map(item => <option key={item.id} value={item.id}>{item.title}</option>)}</select></label>}
         {currentSection === 'team' && <TeamPanel data={data} permissions={permissions} command={command} busy={busy} unitId={unitId} projectId={projectId} actorId={actorId} peopleCommand={peopleCommand} previewMode={previewMode} onNotice={onNotice} />}
         {currentSection === 'projects' && <ProductionsAdmin projects={data.projects} permissions={permissions} command={command} busy={busy} removed={removedEditions} onRemove={onRemoveEdition} onRestore={onRestoreEdition} />}
