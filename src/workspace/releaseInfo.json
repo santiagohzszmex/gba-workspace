@@ -1,9 +1,9 @@
 {
-  "version": "1.7.5",
-  "nativeVersion": "1.7.500",
-  "codename": "Lapislázuli",
+  "version": "1.8.0",
+  "nativeVersion": "1.8.0",
+  "codename": "Labradorita",
   "minimumNativeVersion": "0.1.401",
   "mandatory": false,
-  "noticeTitle": "Lapislázuli · Conexión con Ultramar",
-  "notice": "Prepara asignaciones de maquetación para Ultramar y recibe en Revisión las versiones enviadas desde Ultramar con sus tres archivos verificados."
+  "noticeTitle": "Labradorita · Video y conversación",
+  "notice": "Entrega y revisa video con comentarios por cuadro, conversa en cada asignación y pega texto de Word, Google Docs o Pages conservando el formato."
 }
