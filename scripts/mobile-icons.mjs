@@ -50,7 +50,7 @@ const render = (markup, size, file) => sharp(Buffer.from(markup), { density: 72 
 await Promise.all([
   render(regular, 512, 'icon-512.png'),
   render(regular, 192, 'icon-192.png'),
-  render(regular, 180, 'icon-180.png'),
+  render(regular, 180, 'apple-touch-icon-labradorita.png'),
   render(maskable, 512, 'icon-maskable-512.png')
 ]);
 console.log(`Íconos de celular generados en ${out}/icon-*.png`);

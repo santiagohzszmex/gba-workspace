@@ -28,6 +28,9 @@
   .gw.gw-editions button, .gw-opal-floating button, .gw-opal-tools button, .gw-opal-mentions button { min-width: 44px; }
   .gw-editions .gw-global-nav, .gw-editions .gw-section-nav { max-width: 100%; overflow-x: auto; }
   .gw-editions .gw-global-nav > button, .gw-editions .gw-section-nav > button { flex: 0 0 auto; }
+  .gw-editions .gw-settings-layout { grid-template-columns: minmax(0, 1fr); }
+  .gw-editions .gw-settings-nav { min-width: 0; overscroll-behavior-inline: contain; }
+  .gw-editions .gw-settings-nav > button { flex: 0 0 auto; padding-inline: 12px; }
   .gw-editions .gw-account > button, .gw-editions .gw-notifications > button { justify-content: center; }
   .gw-editions .gw-notification-panel {
     position: fixed;
