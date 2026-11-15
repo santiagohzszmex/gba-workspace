@@ -2,7 +2,7 @@
 
 Una sola tabla con lo que está publicado en cada canal. Actualizar en cada publicación.
 
-**Última actualización: 11 de noviembre de 2026.**
+**Última actualización: 15 de noviembre de 2026.**
 
 | Pieza | Versión publicada | Dónde | Notas |
 |---|---|---|---|
@@ -10,10 +10,24 @@ Una sola tabla con lo que está publicado en cada canal. Actualizar en cada publ
 | App de escritorio · Windows (actualizador) | 1.6.6.3 Cuarzo | `latest-windows.json` (17 oct) | Lapislázuli no se ofrece en Windows hasta la prueba interactiva |
 | Canal compartido (instalaciones antiguas) | 1.6.6.3 puente | `latest.json` (17 oct) | Lleva a las Mac antiguas a Lapislázuli |
 | Página pública de descargas | 1.5.0 base | `gba.software/workspace` (`public/gba/workspace/releases.json`) | Intencionalmente fija; los scripts de publicación exigen que no cambie |
-| Web | 1.7.5 (`e5dbabf`) | `workspace.gba.software` (Vercel `gba-workspace`) | Despliegue automático desde `main` |
+| Web | **1.8.1** (`3a24aeb`, 15 nov) | `workspace.gba.software` (Vercel `gba-workspace`) | Despliegue automático desde `main`. Incluye 1.8.0 Labradorita |
 | Pasarela de archivos (Worker `workspace-originals`) | 1.7.5 · versión `20d761b4` | `workspace-originals.gba-vista.workers.dev` | 11 nov: acepta `workspace.gba.software` (mismo código que `b49b83d0`). Antes: 1.7.0 (`937db032`, 17 oct) |
-| Base de datos (Supabase `wgihpztgwsovhykboyru`) | 1.7.5 + adelanto de 1.8.0 (`workspace_production_kinds`, 11 nov) | — | 1.7.5: puente y corrección aplicados el 10 nov. 1.8.0: tipos de producción aplicados antes de publicar la web; sin efecto visible hasta entonces |
+| Base de datos (Supabase `wgihpztgwsovhykboyru`) | **1.8.1** (`workspace_design_productions_and_roles` y `workspace_sepia_license_codes`, 15 nov) | — | Incluye 1.8.0: tipos de producción, video y conversación con imágenes |
 | Puente con Ultramar | **Encendido** (`upload_policy.ultramar_enabled = true`) | — | Límites: 90 MB `.ultramar`, 90 MB PDF, 20 MB vista previa (4096 px). Apagar: `update workspace_private.upload_policy set ultramar_enabled=false` |
+
+## 1.8.1 publicada (15 de noviembre)
+
+Autorizado por Santiago. Migraciones aplicadas y verificadas en producción, después la web desde `main` (`3a24aeb`):
+- **Producciones de diseño** (tercer tipo) con seis áreas y 15 permisos de aprobación nuevos (matriz: 248 → 263 filas).
+- **Equivalencias en Accesos**: cada función cae en el área equivalente de ediciones, videos y diseños, o en la elegida a
+  mano. Corrige la asignación a videos de 1.8.0 (Redacción/Investigación/Diseño fallaban; Animación 3D y Edición de video
+  caían en «Arte y personajes»).
+- **«Dirección de producción»** reemplaza a «Dirección de microedición» / «Dirección de producto delegada».
+- **Códigos de Sepia** en `workspace_activate_license` (32 caracteres) con las reglas de Ultramar, mediante
+  `sepia_private.workspace_redeem` (dueño `sepia_access_owner`, sin acceso directo para `authenticated`). Funciona ya en la
+  app de escritorio instalada; el texto nuevo de la caja llega con la próxima versión de escritorio.
+- Verificado: funciones anteriores privadas, cadena de comandos intacta, las 5 producciones existentes sin cambios, web
+  sirviendo el paquete nuevo. Detalle en `docs/workspace/1.8.1-plan.md`.
 
 ## Corrección del 11 de noviembre: archivos en la web nueva
 
