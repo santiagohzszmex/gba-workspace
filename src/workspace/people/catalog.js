@@ -20,8 +20,8 @@ export const ACCESS_ROLES = {
     "tone": "teal"
   },
   "gimg_project_director": {
-    "name": "Dirección de producto delegada",
-    "short": "Dir. de producto",
+    "name": "Dirección de producción delegada",
+    "short": "Dir. de producción",
     "tone": "amber"
   },
   "gimg_area_lead": {
@@ -95,7 +95,7 @@ export const CARGOS = [
   },
   {
     "key": "project_director",
-    "title": "Dirección de microedición",
+    "title": "Dirección de producción",
     "accessRole": "gimg_project_director",
     "assignmentRole": "direction",
     "scope": "project",
@@ -110,10 +110,15 @@ export const CARGOS = [
     "expiry": "optional",
     "functions": [
       "research",
+      "writing",
       "editorial",
       "layout",
+      "design",
       "illustration",
-      "photography"
+      "photography",
+      "video_editing",
+      "animation_2d",
+      "animation_3d"
     ],
     "defaultFunction": "illustration",
     "functionLabel": "Área que coordina"
@@ -127,6 +132,8 @@ export const CARGOS = [
     "functions": [
       "research",
       "writing",
+      "editorial",
+      "layout",
       "design",
       "illustration",
       "photography",

@@ -5,7 +5,7 @@ import './video.css';
 // Asignaciones de una producción de video: la entrega es un documento (guion, textos) o un video.
 export default function VideoKindForm({ task, project, video, api, busy, editable }) {
   const [kind, setKind] = useState(task.kind === 'video' ? 'video' : 'document'), [error, setError] = useState(''), [saving, setSaving] = useState(false);
-  if (project?.kind !== 'video' || task.kind === 'image' || !video?.enabled) return null;
+  if (!['video', 'design'].includes(project?.kind) || task.kind === 'image' || !video?.enabled) return null;
   const locked = task.current_version > 0, changed = kind !== (task.kind === 'video' ? 'video' : 'document');
   async function save(event) {
     event.preventDefault(); setSaving(true); setError('');

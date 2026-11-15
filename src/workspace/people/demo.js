@@ -1,3 +1,4 @@
+import { functionArea, productionKind } from '../productionKinds.mjs';
 // Isolated local preview. This adapter never calls Supabase or creates real access.
 import matrix from '../permissionMatrix.json';
 import { DEMO_ACTORS, demoPermissions } from '../workflowDemo';
@@ -32,9 +33,11 @@ export function createPeopleDemo(data,actorId,projectId){
   else if(action==='assign'){
    if(statusOf(member)!=='active')throw Error('La persona debe tener acceso activo.');
    const c=CARGOS.find(c=>c.key===value.cargoKey);const fn=value.functionKey || c.assignmentRole;
-   const specialty=({research:'research',editorial:'text',writing:'text',design:'integration',layout:'integration',photography:'art',illustration:'art',video_editing:'art',animation_2d:'art',animation_3d:'art'})[fn];
-   let area=state.areas.find(a=>a.project_id===value.projectId && a.specialty===specialty && (fn!=='photography' || a.name==='Fotografía'));
-   if(c.scope==='area'&&!area){area={id:id('demo-area'),project_id:value.projectId,name:fn==='photography'?'Fotografía':'Área de prueba',specialty};state.areas.push(area);}
+   // Misma regla que el servidor: área elegida a mano o la equivalente a la función según el tipo de producción.
+   const project=state.projects.find(p=>p.id===value.projectId),[specialty,areaName]=functionArea(project,fn)||['art','Ilustración'];
+   let area=value.areaId?state.areas.find(a=>a.id===value.areaId&&a.project_id===value.projectId):state.areas.find(a=>a.project_id===value.projectId && a.specialty===specialty && (productionKind(project)!=='publication' || ((fn!=='photography' || a.name==='Fotografía') && (fn==='photography' || a.name!=='Fotografía'))));
+   if(c.scope==='area'&&value.areaId&&!area)throw Error('El área no pertenece a esa producción');
+   if(c.scope==='area'&&!area){area={id:id('demo-area'),project_id:value.projectId,name:areaName,specialty};state.areas.push(area);}
    const scopeId=c.scope==='unit'?state.unit.id:c.scope==='project'?value.projectId:area.id;
    if(state.grants.some(g=>g.user_id===uid&&g.scope_type===c.scope&&g.scope_id===scopeId&&live(g)))throw Error('Ya existe un cargo vigente en ese alcance.');
    const grant={id:id('demo-grant'),user_id:uid,cargo_key:c.key,access_role:value.accessRole || c.accessRole,scope_type:c.scope,scope_id:scopeId,expires_at:value.expiresAt,starts_at:new Date().toISOString(),reason:value.reason};state.grants.push(grant);

@@ -2,7 +2,7 @@ export const PLATFORM_ROLES = { gba_platform_owner: 'Administración técnica de
 export const GIMG_ROLES = {
   gimg_direction: 'Dirección de GIMG',
   gimg_production_lead: 'Responsable de Producción', gimg_workspace_coordinator: 'Coordinación de Workspace',
-  gimg_project_director: 'Dirección de producto delegada', gimg_area_lead: 'Responsable de área',
+  gimg_project_director: 'Dirección de producción delegada', gimg_area_lead: 'Responsable de área',
   gimg_contributor: 'Colaborador', gimg_quality_manager: 'Gestión de archivos y QA', gimg_viewer: 'Consulta'
 };
 export const STATES = { pending:'Pendiente', assigned:'Asignado', in_progress:'En progreso', review:'En revisión', changes_requested:'Cambios solicitados', area_approved:'Aprobado de área', in_qa:'En QA', qa_approved:'QA aprobado', published:'Publicado', archived:'Archivado', blocked:'Bloqueado' };

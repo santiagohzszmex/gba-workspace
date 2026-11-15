@@ -4,7 +4,9 @@ import React from 'react';import {renderToStaticMarkup} from 'react-dom/server';
 import {PRODUCTION_KINDS,productionKind,isVideoProduction,productionNoun} from '../src/workspace/productionKinds.mjs';
 
 // Workspace 1.8.0 Labradorita · tipos de producción en la interfaz.
-assert.deepEqual(Object.keys(PRODUCTION_KINDS),['publication','video']);
+assert.deepEqual(Object.keys(PRODUCTION_KINDS),['publication','video','design']);
+// 1.8.1: diseño es el tercer tipo; se llama «producción» y lleva su etiqueta.
+assert.equal(productionKind({kind:'design'}),'design');assert.equal(productionNoun({kind:'design'}),'producción');assert.equal(isVideoProduction({kind:'design'}),false);
 assert.equal(productionKind({}),'publication');assert.equal(productionKind({kind:'video'}),'video');assert.equal(productionKind({kind:'otro'}),'publication');
 assert.equal(isVideoProduction({kind:'video'}),true);assert.equal(isVideoProduction({kind:'publication'}),false);assert.equal(isVideoProduction(null),false);
 assert.equal(productionNoun({kind:'video'}),'producción');assert.equal(productionNoun({kind:'publication'}),'edición');assert.equal(productionNoun(undefined),'edición');
@@ -54,7 +56,7 @@ assert.match(settings,/Administrar producciones/);assert.match(settings,/<Produc
 // Textos: dentro de una producción se usa su nombre («edición» o «producción»); los generales dicen «producción».
 // Sólo quedan «edición» con otro sentido (áreas, editar, microedición) o el valor por omisión del sustantivo.
 {
- const allowed=[/Edición de video/,/Edición y montaje/,/microedición/,/Cerrar edición de referencia/,/ediciones y textos/,/noun='edición'/,/^\s*\/\//,/'edición';$/];
+ const allowed=[/Edición de video/,/Edición y montaje/,/microedición/,/Cerrar edición de referencia/,/ediciones y textos/,/'edición' : 'producción'/,/equivalencias entre ediciones, videos y diseños/,/noun='edición'/,/^\s*\/\//,/'edición';$/];
  const files=['src/views/Workspace.jsx',...(await fs.readdir('src/workspace',{recursive:true})).filter(f=>/\.(jsx?|mjs)$/.test(f)&&!/[Dd]emo|workspaceData/.test(f)).map(f=>`src/workspace/${f}`)];
  const left=[];
  for(const file of files)(await fs.readFile(file,'utf8')).split('\n').forEach((line,i)=>{if(/[Ee]dici(ón|ones)/.test(line)&&!allowed.some(re=>re.test(line)))left.push(`${file}:${i+1}`);});

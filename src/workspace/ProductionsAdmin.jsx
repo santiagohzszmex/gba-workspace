@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { BookOpen, Clapperboard, Plus, Pencil, X, ArrowLeft } from 'lucide-react';
+import { BookOpen, Clapperboard, PenTool, Plus, Pencil, X, ArrowLeft } from 'lucide-react';
 import { CommandForm } from './ui';
 import { dateLabel } from './gimgModel';
 import { PRODUCTION_KINDS, productionKind } from './productionKinds.mjs';
@@ -11,7 +11,8 @@ const STATUS = { planned: 'Planeada', active: 'Activa', closed: 'Cerrada', archi
 const GROUPS = [['current', 'En curso', ['active', 'planned']], ['closed', 'Cerradas', ['closed']], ['archived', 'Archivadas', ['archived']]];
 const KIND_DETAILS = {
   publication: { Icon: BookOpen, text: 'Revistas, ediciones y textos.', areas: ['Investigación', 'Editorial', 'Ilustración', 'Diseño y maquetación', 'QA'] },
-  video: { Icon: Clapperboard, text: 'Videos, cortos y animaciones.', areas: ['Guion', 'Storyboard y animatic', 'Arte y personajes', 'Animación 3D', 'Animación 2D', 'Edición y montaje', 'Publicación en redes'] }
+  video: { Icon: Clapperboard, text: 'Videos, cortos y animaciones.', areas: ['Guion', 'Storyboard y animatic', 'Arte y personajes', 'Animación 3D', 'Animación 2D', 'Edición y montaje', 'Publicación en redes'] },
+  design: { Icon: PenTool, text: 'Personajes, productos y dispositivos.', areas: ['Investigación y referencias', 'Concepto y bocetos', 'Diseño', 'Modelado 3D y render', 'Prototipo', 'Presentación'] }
 };
 const DATE_FIELDS = { starts_at: { label: 'Inicio', type: 'datetime-local', optional: true }, ends_at: { label: 'Cierre', type: 'datetime-local', optional: true } };
 

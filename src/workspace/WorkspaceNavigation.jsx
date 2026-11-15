@@ -1,7 +1,7 @@
 import React, { useRef } from 'react';
 import { BookOpen, Layers, Settings, RefreshCw, Archive } from 'lucide-react';
 import workspaceIcon from '../../src-tauri/icons/64x64.png';
-import { isVideoProduction } from './productionKinds.mjs';
+import { productionTag } from './productionKinds.mjs';
 
 const EDITION_SECTIONS = { work: 'Mi trabajo', assignments: 'Asignaciones', reviews: 'Revisión', documents: 'Documentos', team: 'Equipo', calendar: 'Calendario' };
 
@@ -46,7 +46,7 @@ export function EditionTabs({ projects, selectedId, onSelect, busy, closed = fal
         tabIndex={index === selectedIndex ? 0 : -1} disabled={busy}
         ref={element => { buttons.current[index] = element; }}
         onKeyDown={event => move(event, index)} onClick={() => onSelect(project.id)}
-      >{project.title}{isVideoProduction(project) && <small>Video</small>}{project.status === 'archived' && <small>Archivada</small>}</button>)}
+      >{project.title}{productionTag(project) && <small>{productionTag(project)}</small>}{project.status === 'archived' && <small>Archivada</small>}</button>)}
     </div>
   </div>;
 }

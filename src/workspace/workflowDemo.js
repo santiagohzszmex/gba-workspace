@@ -9,7 +9,7 @@ export const DEMO_ACTORS = {
  writer: { id: 'demo-writer', name: 'Redacción', role: 'gimg_contributor', area: 'text-demo', projects: ['halloween-demo'] },
  production: { id: 'demo-production', name: 'Producción', role: 'gimg_production_lead', projects: ['halloween-demo', 'muertos-demo'] },
  coordinator: { id: 'demo-coordinator', name: 'Coordinación', role: 'gimg_workspace_coordinator', projects: ['halloween-demo'] },
- productDirector: { id: 'demo-product-direction', name: 'Dirección de producto delegada', role: 'gimg_project_director', projects: ['halloween-demo'], delegated: ['task.create', 'task.assign', 'task.update_schedule', 'review.approve_research', 'review.approve_art', 'review.approve_text', 'review.approve_integration', 'review.request_changes', 'review.queue_qa', 'content.comment', 'qa.raise_issue'] },
+ productDirector: { id: 'demo-product-direction', name: 'Dirección de producción delegada', role: 'gimg_project_director', projects: ['halloween-demo'], delegated: ['task.create', 'task.assign', 'task.update_schedule', 'review.approve_research', 'review.approve_art', 'review.approve_text', 'review.approve_integration', 'review.request_changes', 'review.queue_qa', 'content.comment', 'qa.raise_issue'] },
  quality: { id: 'demo-quality', name: 'Archivos y QA', role: 'gimg_quality_manager', projects: ['halloween-demo'] },
  viewer: { id: 'demo-viewer', name: 'Consulta compartida', role: 'gimg_viewer', projects: ['halloween-demo'], delegated: ['unit.read', 'project.read', 'task.read', 'content.read', 'asset.download_preview'] },
  platform: { id: 'demo-platform', name: 'Administración técnica de GBA', role: 'gba_platform_owner', platformOwner: true, projects: [] },

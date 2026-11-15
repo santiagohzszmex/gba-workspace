@@ -107,7 +107,7 @@ export default function Workspace({ previewMode = false }) {
       const id = selectedEdition(next.projects,projectId,requestedScreen);
       const contextualTask = next.tasks.find(item => item.id === selectedId && item.project_id === id) || next.tasks.find(item => item.project_id === id);
       const area = contextualTask?.area_id || next.areas.find(item => item.project_id === id)?.id || null;
-      const videoProject = next.projects.find(item => item.id === id)?.kind === 'video';
+      const videoProject = ['video','design'].includes(next.projects.find(item => item.id === id)?.kind);
       const [unitPerm, directoryPerm, workPermissions, approvedDocuments, referenceBundle, removed, opal, support, team, images, deadlines, ultramar, video] = await Promise.all([
         rpc('workspace_permissions', { p_unit: unit }),
         rpc('workspace_permissions', { p_unit: unit, p_project: id || null, p_area: area, p_deliverable: contextualTask?.id || null }),
