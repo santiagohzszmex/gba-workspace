@@ -1,9 +1,9 @@
 {
-  "version": "1.7.5",
-  "nativeVersion": "1.7.500",
-  "codename": "Lapislázuli",
+  "version": "1.8.1",
+  "nativeVersion": "1.8.100",
+  "codename": "Labradorita",
   "minimumNativeVersion": "0.1.401",
   "mandatory": false,
-  "noticeTitle": "Lapislázuli · Conexión con Ultramar",
-  "notice": "Prepara asignaciones de maquetación para Ultramar y recibe en Revisión las versiones enviadas desde Ultramar con sus tres archivos verificados."
+  "noticeTitle": "Labradorita 1.8.1 · Diseños y equipo",
+  "notice": "Agrega producciones de diseño, coloca a cada persona en el área equivalente de ediciones, videos y diseños, y acepta códigos de licencia de Sepia."
 }
