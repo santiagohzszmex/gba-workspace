@@ -10,7 +10,8 @@ if (process.platform !== 'win32' || process.env.GITHUB_ACTIONS !== 'true' || !pr
 }
 const releases = 'https://github.com/santiagohzszmex/GBA-VISTA-seeitdifferently/releases/download/';
 const priorVersion = '1.6.603';
-const nextVersion = '1.8.0';
+// La versión esperada es la de esta misma revisión (releaseInfo.json), publicada en el canal aislado de prueba.
+const nextVersion = JSON.parse(await fs.readFile(new URL('../src/workspace/releaseInfo.json', import.meta.url), 'utf8')).nativeVersion;
 const stagedTarget = 'windows-labradorita-beta';
 const port = 19431;
 const folder = await fs.mkdtemp(path.join(process.env.RUNNER_TEMP, 'workspace-labradorita-'));
@@ -127,7 +128,7 @@ try {
   }
   assert.equal(await updated.evaluate(`localStorage.getItem(${JSON.stringify(sentinelKey)})`), 'conservado');
   updated.close();
-  console.log('PASS: 1.6.6.3 → 1.8.0 por el actualizador firmado de Windows; reinició y conservó los datos locales.');
+  console.log(`PASS: 1.6.6.3 → ${nextVersion} por el actualizador firmado de Windows; reinició y conservó los datos locales.`);
 } finally {
   current?.close();
   if (!old.killed && old.exitCode === null) old.kill();
