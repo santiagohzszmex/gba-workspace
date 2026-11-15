@@ -2,18 +2,33 @@
 
 Una sola tabla con lo que está publicado en cada canal. Actualizar en cada publicación.
 
-**Última actualización: 15 de noviembre de 2026.**
+**Última actualización: 15 de noviembre de 2026 (escritorio 1.8.1).**
 
 | Pieza | Versión publicada | Dónde | Notas |
 |---|---|---|---|
-| App de escritorio · macOS (actualizador) | **1.7.5** Lapislázuli (nativa 1.7.500), publicada el 10 nov · [release](https://github.com/santiagohzszmex/GBA-VISTA-seeitdifferently/releases/tag/workspace-v1.7.5-beta.1) | `latest-darwin.json` en la release `workspace-updates` de `GBA-VISTA-seeitdifferently` | Antes: 1.7.2.1 (4 nov). Beta sin notarización; paquetes firmados con la llave de Workspace |
-| App de escritorio · Windows (actualizador) | 1.6.6.3 Cuarzo | `latest-windows.json` (17 oct) | Lapislázuli no se ofrece en Windows hasta la prueba interactiva |
+| App de escritorio · macOS (actualizador) | **1.8.1** Labradorita (nativa 1.8.100), publicada el 15 nov · [release](https://github.com/santiagohzszmex/GBA-VISTA-seeitdifferently/releases/tag/workspace-v1.8.1-beta.1) | `latest-darwin.json` en la release `workspace-updates` de `GBA-VISTA-seeitdifferently` | Antes: 1.8.0 (12 nov). Beta sin notarización; paquetes firmados con la llave de Workspace |
+| App de escritorio · Windows (actualizador) | **1.8.1** Labradorita (nativa 1.8.100), publicada el 15 nov | `latest-windows.json` | Antes: 1.8.0 (12 nov). Actualización probada en un Windows real de CI: 1.6.6.3 → 1.8.100 conservando datos ([run 43752507904](https://github.com/santiagohzszmex/gba-workspace/actions/runs/43752507904)). Instalador sin Authenticode |
 | Canal compartido (instalaciones antiguas) | 1.6.6.3 puente | `latest.json` (17 oct) | Lleva a las Mac antiguas a Lapislázuli |
 | Página pública de descargas | 1.5.0 base | `gba.software/workspace` (`public/gba/workspace/releases.json`) | Intencionalmente fija; los scripts de publicación exigen que no cambie |
 | Web | **1.8.1** (`3a24aeb`, 15 nov) | `workspace.gba.software` (Vercel `gba-workspace`) | Despliegue automático desde `main`. Incluye 1.8.0 Labradorita |
 | Pasarela de archivos (Worker `workspace-originals`) | 1.7.5 · versión `20d761b4` | `workspace-originals.gba-vista.workers.dev` | 11 nov: acepta `workspace.gba.software` (mismo código que `b49b83d0`). Antes: 1.7.0 (`937db032`, 17 oct) |
 | Base de datos (Supabase `wgihpztgwsovhykboyru`) | **1.8.1** (`workspace_design_productions_and_roles` y `workspace_sepia_license_codes`, 15 nov) | — | Incluye 1.8.0: tipos de producción, video y conversación con imágenes |
 | Puente con Ultramar | **Encendido** (`upload_policy.ultramar_enabled = true`) | — | Límites: 90 MB `.ultramar`, 90 MB PDF, 20 MB vista previa (4096 px). Apagar: `update workspace_private.upload_policy set ultramar_enabled=false` |
+
+## Escritorio 1.8.1 publicado (15 de noviembre)
+
+Autorizado por Santiago («lánzala para descargar en Mac y Windows»). Commit `83d35b6`, compilación nativa
+[43751401653](https://github.com/santiagohzszmex/gba-workspace/actions/runs/43751401653) exitosa en los tres corredores
+(instalación y arranque verificados). Publicado con `scripts/workspace-publish-labradorita.mjs`:
+1. `--prepare`: huellas de los tres candidatos comprobadas y actualizaciones firmadas con la llave local; las tres firmas
+   verificadas contra la llave pública de la app.
+2. `--stage`: release [`workspace-v1.8.1-beta.1`](https://github.com/santiagohzszmex/GBA-VISTA-seeitdifferently/releases/tag/workspace-v1.8.1-beta.1)
+   y canal aislado `latest-windows-labradorita-beta.json`.
+3. Prueba en Windows ([43752507904](https://github.com/santiagohzszmex/gba-workspace/actions/runs/43752507904)): instalación
+   pública 1.6.6.3 → 1.8.100 por el actualizador firmado; reinició y conservó los datos.
+4. `--promote`: bytes públicos comprobados; `latest-darwin.json` y `latest-windows.json` = 1.8.100; canal de prueba
+   borrado; canales anteriores (1.8.0) guardados localmente para volver atrás.
+`latest.json` sigue en el puente 1.6.6.3 y la página pública de descargas sigue en 1.5.0 (sin cambios, como siempre).
 
 ## 1.8.1 publicada (15 de noviembre)
 
