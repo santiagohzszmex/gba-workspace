@@ -1,9 +1,9 @@
 {
-  "version": "1.8.1",
-  "nativeVersion": "1.8.100",
+  "version": "1.8.1.1",
+  "nativeVersion": "1.8.101",
   "codename": "Labradorita",
   "minimumNativeVersion": "0.1.401",
   "mandatory": false,
-  "noticeTitle": "Labradorita 1.8.1 · Diseños y equipo",
-  "notice": "Agrega producciones de diseño, coloca a cada persona en el área equivalente de ediciones, videos y diseños, y acepta códigos de licencia de Sepia."
+  "noticeTitle": "Labradorita 1.8.1.1 · Permisos de Dirección",
+  "notice": "Al asignar Dirección de producción, Workspace abre el paso para definir sus permisos, vigencia y motivo. También permite definirlos desde la ficha de un cargo existente."
 }

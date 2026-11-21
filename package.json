@@ -1,7 +1,7 @@
 {
   "name": "gba-workspace",
   "private": true,
-  "version": "1.8.1",
+  "version": "1.8.1.1",
   "type": "module",
   "description": "Workspace de GBA: app de coordinación editorial de GIMG (escritorio y web).",
   "scripts": {

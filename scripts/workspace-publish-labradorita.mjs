@@ -34,7 +34,7 @@ if(info.conclusion!=='success'||info.name!=='Workspace native candidates'||info.
 const version=release.nativeVersion,display=release.version,tag=`workspace-v${display}-beta.1`,feed='workspace-updates';
 const folder=path.resolve('release-candidates',`labradorita-${runId}`),out=path.join(folder,'release');
 const assetUrl=file=>`https://github.com/${REPOSITORY}/releases/download/${tag}/${encodeURIComponent(file)}`;
-const notes=`Workspace ${display} agrega producciones de diseño, coloca a cada persona en el área equivalente de ediciones, videos y diseños, y acepta códigos de licencia de Sepia.`;
+const notes=`Workspace ${display} · ${release.notice}`;
 const ARTIFACTS={'darwin-aarch64':'workspace-macos-aarch64','darwin-x86_64':'workspace-macos-x86_64','windows-x86_64':'workspace-windows-x86_64'};
 
 if(mode==='--prepare'){
